@@ -416,9 +416,150 @@ build {
     inline          = ["mkdir -p /etc/vsts", "cp /tmp/ubuntu2004.conf /etc/vsts/machine_instance.conf"]
   }
 
+  // provisioner "shell" {
+  //   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  // }
+
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+  // To able run this image in Ubicloud, we need to remove some Azure specific configurations
+
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+    inline          = ["sleep 30"]
+  }
+
+  provisioner "shell" {
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/ubicloud/setup-runner-user.sh"]
+  }
+
+  // Install nftables and enable it because it's not installed by default in Ubuntu 20.04
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = [
+      "apt-get install nftables",
+      "systemctl start nftables",
+      "systemctl enable nftables"
+    ]
+  }
+
+  // It's Hyper-V Key Value Pair daemon, which is not needed in Ubicloud
+  // It blocks booting the VM if it's not disabled
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["systemctl disable hv-kvp-daemon.service"]
+  }
+
+  // Delete the Azure Linux Agent
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["apt-get purge walinuxagent"]
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["rm -rf /var/lib/waagent", "rm -f /var/log/waagent.log"]
+  }
+
+  // Clean up cloud-init logs and cache to run it again on first boot
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["cloud-init clean --logs --seed"]
+  }
+
+  // Delete Azure specific cloud-init config files
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["rm -rf /etc/cloud/cloud.cfg.d/90-azure.cfg", "rm -rf /etc/cloud/cloud.cfg.d/10-azure-kvp.cfg"]
+  }
+
+  // Replace cloud-init datasource_list with default list
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline = [ <<EOF
+echo "# to update this file, run dpkg-reconfigure cloud-init
+datasource_list: [ NoCloud, ConfigDrive, OpenNebula, DigitalOcean, Azure, AltCloud, OVF, MAAS, GCE, OpenStack, CloudSigma, SmartOS, Bigstep, Scaleway, AliYun, Ec2, CloudStack, Hetzner, IBMCloud, Oracle, Exoscale, RbxCloud, UpCloud, VMware, Vultr, LXD, NWCS, None ]" > /etc/cloud/cloud.cfg.d/90_dpkg.cfg
+EOF
+  ]
+  }
+
+  // Delete Azure specific grub config files
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["rm -rf /etc/default/grub.d/40-force-partuuid.cfg", "rm -rf /etc/default/grub.d/50-cloudimg-settings.cfg"]
+  }
+
+  // Replace 50-cloudimg-settings with default grub settings
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline = [ <<EOF
+echo "# Cloud Image specific Grub settings for Generic Cloud Images
+# CLOUD_IMG: This file was created/modified by the Cloud Image build process
+
+# Set the recordfail timeout
+GRUB_RECORDFAIL_TIMEOUT=0
+
+# Do not wait on grub prompt
+GRUB_TIMEOUT=0
+
+# Set the default commandline
+GRUB_CMDLINE_LINUX_DEFAULT=\"console=tty1 console=ttyS0\"
+
+# Set the grub console type
+GRUB_TERMINAL=console" >> /etc/default/grub.d/50-cloudimg-settings.cfg
+EOF
+  ]
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["update-grub"]
+  }
+
+  # Docker containers can't resolve DNS addresses by default on our networking
+  # setup. We will investigate it in depth, and try to find more generic solution.
+  # Related issue: https://github.com/ubicloud/ubicloud/issues/507
+  # Until proper fix, we add custom systemd-resolved configuration.
+  # Docker gets resolve.conf content from systemd-resolved service.
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = [
+      "mkdir -p /etc/systemd/resolved.conf.d",
+      "echo \"[Resolve]\nDNS=9.9.9.9 149.112.112.112 2620:fe::fe 2620:fe::9\" > /etc/systemd/resolved.conf.d/Ubicloud.conf",
+      "systemctl restart systemd-resolved.service"
+    ]
+  }
+
+  // sysstat is already installed, but it's not enabled by default
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["apt-get install sysstat", "systemctl enable sysstat", "systemctl start sysstat"]
+  }
+
+  // Remove all existing ssh host keys
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["rm /etc/ssh/ssh_host_*key*"]
+  }
+
+  // Delete the root password
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["passwd -d root"]
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["sync"]
+  }
+
+  // Delete the packer account
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["touch /var/run/utmp", "userdel -f -r packer"]
   }
 
 }
