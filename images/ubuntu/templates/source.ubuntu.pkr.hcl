@@ -16,8 +16,8 @@ source "azure-arm" "image" {
   image_sku                              = split(":", local.source_image_marketplace_sku)[2]
   image_version                          = var.source_image_version
   location                               = var.location
-  managed_image_name                     = var.managed_image_name
-  managed_image_resource_group_name      = var.managed_image_resource_group_name
+  managed_image_name                     = can(regex("-arm", var.image_os)) ? null : var.managed_image_name
+  managed_image_resource_group_name      = can(regex("-arm", var.image_os)) ? null : var.managed_image_resource_group_name
   managed_image_storage_account_type     = var.managed_image_storage_account_type
   os_disk_size_gb                        = local.os_disk_size_gb
   os_type                                = var.image_os_type
@@ -27,14 +27,14 @@ source "azure-arm" "image" {
   virtual_network_name                   = var.virtual_network_name
   virtual_network_resource_group_name    = var.virtual_network_resource_group_name
   virtual_network_subnet_name            = var.virtual_network_subnet_name
-  vm_size                                = var.vm_size
+  vm_size                                = local.vm_size
   winrm_username                         = var.winrm_username
 
   shared_image_gallery_destination {
     subscription                         = var.subscription_id
     gallery_name                         = var.gallery_name
     resource_group                       = var.gallery_resource_group_name
-    image_name                           = var.gallery_image_name
+    image_name                           = local.gallery_image_name
     image_version                        = var.gallery_image_version
     storage_account_type                 = var.gallery_storage_account_type
   }
