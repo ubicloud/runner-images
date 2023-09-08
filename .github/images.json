@@ -3,17 +3,30 @@
     {
       "image_type": "ubuntu-22.04",
       "readme": "Ubuntu2204-Readme.md",
-      "image_name": "github-ubuntu-2204-x64"
+      "image_name": "github-ubuntu-2204-x64",
+      "image_os": "ubuntu22",
+      "build_template_name": "build.ubuntu-22_04"
+    },
+    {
+      "image_type": "ubuntu-22.04.arm64",
+      "readme": "Ubuntu2204-Arm64-Readme.md",
+      "image_name": "github-ubuntu-2204-arm64",
+      "image_os": "ubuntu22-arm64",
+      "build_template_name": "build.ubuntu-22_04-arm64"
     },
     {
       "image_type": "ubuntu-24.04",
       "readme": "Ubuntu2404-Readme.md",
-      "image_name": "github-ubuntu-2404-x64"
+      "image_name": "github-ubuntu-2404-x64",
+      "image_os": "ubuntu24",
+      "build_template_name": "build.ubuntu-24_04"
     },
     {
-      "image_type": "ubuntu-minimal",
-      "readme": "Ubuntu2204-Readme.md",
-      "image_name": "github-ubuntu-minimal-x64"
+      "image_type": "ubuntu-24.04.arm64",
+      "readme": "Ubuntu2404-Arm64-Readme.md",
+      "image_name": "github-ubuntu-2404-arm64",
+      "image_os": "ubuntu24-arm64",
+      "build_template_name": "build.ubuntu-24_04-arm64"
     }
   ]
 }
