@@ -9,7 +9,7 @@ on:
       image_types:
         description: "Comma-separated list of image types to build"
         required: true
-        default: ubuntu-22.04,ubuntu-24.04
+        default: ubuntu-22.04,ubuntu-22.04.arm64,ubuntu-24.04,ubuntu-24.04.arm64
         type: string
       image_version:
         description: "Image version in semver format. You can get current version from the README.md file"
@@ -40,12 +40,12 @@ env:
 
 jobs:
   generate-matrix:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-slim
     outputs:
       matrix: ${{ steps.set-matrix.outputs.matrix }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Set matrix
         id: set-matrix
@@ -80,18 +80,18 @@ jobs:
           $ImageType = "${{ matrix.image_type }}"
           $TemplateDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu/templates" } else { "windows/templates" }
           $TemplateDirectoryPath = Join-Path "images" $TemplateDirectoryName | Resolve-Path
-          $TemplatePath = Join-Path $TemplateDirectoryPath "$ImageType.pkr.hcl"
           "TemplateDirectoryPath=$TemplateDirectoryPath" >> $env:GITHUB_ENV
-          "TemplatePath=$TemplatePath" >> $env:GITHUB_ENV
 
       - name: Build VM
         if: ${{ inputs.build_image }}
         shell: pwsh
         run: |
           ./images.CI/linux-and-win/build-image.ps1 `
+            -BuildTemplateName "${{ matrix.build_template_name }}" `
+            -ImageOS "${{ matrix.image_os }}" `
             -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
             -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
-            -TemplatePath "$env:TemplatePath" `
+            -TemplatePath "$env:TemplateDirectoryPath" `
             -ImageName "${{ env.MANAGED_IMAGE_NAME }}" `
             -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
             -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
@@ -197,7 +197,7 @@ jobs:
       MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install azcopy
         run: |
