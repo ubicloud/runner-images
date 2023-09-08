@@ -392,9 +392,23 @@ provisioner "shell" {
     scripts          = ["${path.root}/../scripts/build/configure-system.sh"]
   }
 
-  provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
-  }
+  // provisioner "shell" {
+  //   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  // }
 
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+      "${path.root}/../scripts/ubicloud/setup-systemd-resolved.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+  }
 }
