@@ -17,7 +17,8 @@ param(
     [String] [Parameter (Mandatory=$false)] $VirtualNetworkSubnet,
     [String] [Parameter (Mandatory=$false)] $AllowedInboundIpAddresses = "[]",
     [hashtable] [Parameter (Mandatory=$false)] $Tags = @{},
-    [String] [Parameter (Mandatory=$false)] $AmazonPluginVersion = "1.8.2"
+    [String] [Parameter (Mandatory=$false)] $AmazonPluginVersion = "1.8.2",
+    [String] [Parameter (Mandatory=$false)] $ImageVersion
 )
 
 if (-not (Test-Path $TemplatePath))
@@ -81,6 +82,10 @@ packer build    -only "$buildName.*" `
                 -var "allowed_inbound_ip_addresses=$($AllowedInboundIpAddresses)" `
                 -var "use_azure_cli_auth=$UseAzureCliAuth" `
                 -var "azure_tags=$azure_tags" `
+                -var "image_version=$ImageVersion" `
+                -var "gallery_name=GitHubRunnerImages" `
+                -var "gallery_resource_group_name=$ImageResourceGroupName" `
+                -var "gallery_image_version=$ImageVersion" `
                 -color=false `
                 $TemplatePath `
         | Where-Object {
