@@ -1,0 +1,164 @@
+name: Build Ubicloud Image
+# GitHub Action port from Azure Pipelines version
+# https://github.com/actions/runner-images/blob/main/images.CI/linux-and-win/azure-pipelines/image-generation.yml
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_type:
+        description: "Image type"
+        required: true
+        default: ubuntu-22.04
+        type: choice
+        options:
+          - ubuntu-20.04
+          - ubuntu-22.04
+          - ubuntu-24.04
+          - ubuntu-minimal
+      image_suffix:
+        description: "Suffix for image name, if not provided the image version"
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_LOCATION: "Germany West Central"
+  RUN_VALIDATION_FLAG: "true"
+jobs:
+  build:
+    name: Build ${{ inputs.image_type }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Setup packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 1.9.4
+
+      - name: Set variables
+        shell: pwsh
+        run: |
+          $ImageType = "${{ inputs.image_type }}"
+          $TemplateDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu/templates" } else { "windows/templates" }
+          $TemplateDirectoryPath = Join-Path "images" $TemplateDirectoryName | Resolve-Path
+          $TemplatePath = Join-Path $TemplateDirectoryPath "$ImageType.pkr.hcl"
+          "TemplateDirectoryPath=$TemplateDirectoryPath" >> $env:GITHUB_ENV
+          "TemplatePath=$TemplatePath" >> $env:GITHUB_ENV
+
+          $ReadmeName = switch ( $ImageType )
+          {
+              "ubuntu-20.04" { 'Ubuntu2004-Readme.md' }
+              "ubuntu-22.04" { 'Ubuntu2204-Readme.md' }
+              "ubuntu-24.04" { 'Ubuntu2404-Readme.md' }
+              "ubuntu-minimal" { 'Ubuntu2204-Readme.md' }
+          }
+          "Readme_Name=$ReadmeName" >> $env:GITHUB_ENV
+          $readmePath = Join-Path "$TemplateDirectoryPath/.." "$ReadmeName" | Resolve-Path
+          $ImageVersion = (Select-String -Path $readmePath -Pattern 'Image Version: ([0-9.]+)').Matches.Groups[1].Value
+          $ImageSuffix = if ("${{ inputs.image_suffix }}") { "${{ inputs.image_suffix }}" } else { $ImageVersion }
+          "ImageSuffix=$ImageSuffix" >> $env:GITHUB_ENV
+
+          $ManagedImageName = "${{ inputs.image_type }}-$ImageSuffix"
+          "ManagedImageName=$ManagedImageName" >> $env:GITHUB_ENV
+
+          $VhdName = "$ManagedImageName.vhd"
+          "VhdName=$VhdName" >> $env:GITHUB_ENV
+
+          $TempResourceGroupName = "packer-temp-$ManagedImageName"
+          "TempResourceGroupName=$TempResourceGroupName" >> $env:GITHUB_ENV
+
+      - name: Build VM
+        shell: pwsh
+        run: |
+          ./images.CI/linux-and-win/build-image.ps1 `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TemplatePath "$env:TemplatePath" `
+            -ImageName "$env:ManagedImageName" `
+            -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+            -TempResourceGroupName "$env:TempResourceGroupName" `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+            -Location "$env:AZURE_LOCATION" `
+            -ImageVersion "$env:ImageSuffix"
+        env:
+          PACKER_LOG: 1
+          PACKER_LOG_PATH: "/tmp/packer-log.txt"
+
+      - name: Convert managed image to VHD
+        shell: pwsh
+        run: |
+          ./images.CI/linux-and-win/convert-to-vhd.ps1 `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -Location "$env:AZURE_LOCATION" `
+            -ResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+            -ManagedImageName "$env:ManagedImageName" `
+            -GalleryName "GitHubRunnerImages" `
+            -GalleryImageSku "${{ inputs.image_type }}" `
+            -GalleryImageVersion "$env:ImageSuffix" `
+            -StorageAccountName "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
+            -StorageAccountContainerName "images" `
+            -VhdName "$env:VhdName" `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+            -RemoveManagedImage
+
+      - name: Copy image artifacts to the separate directory
+        shell: pwsh
+        run: |
+          $ImageType = "${{ inputs.image_type }}"
+          $rootDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu" } else { "windows" }
+          $rootDirectoryPath = Join-Path "images" $rootDirectoryName | Resolve-Path
+
+          $readmePath = Join-Path $rootDirectoryPath "$env:Readme_Name"
+          $softwareReportPath = Join-Path $rootDirectoryPath "software-report.json"
+
+          New-Item artifact -ItemType Directory
+          Copy-Item -Path $readmePath -Destination "artifact/"
+          if (Test-Path $softwareReportPath) {
+              Copy-Item -Path $softwareReportPath -Destination "artifact/"
+          }
+
+      - name: Print markdown software report
+        shell: pwsh
+        run: |
+          Get-Content -Path "artifact/$env:Readme_Name"
+
+      - name: Print json software report
+        shell: pwsh
+        run: |
+          $softwareReportPath = "artifact/software-report.json"
+          if (Test-Path $softwareReportPath) {
+              Get-Content -Path $softwareReportPath
+          }
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ env.ManagedImageName }}-artifact
+          path: artifact/*
+
+      - name: Print provisioners duration
+        shell: pwsh
+        run: |
+          ./images.CI/measure-provisioners-duration.ps1 `
+            -PackerLogPath "/tmp/packer-log.txt" `
+            -PrefixToPathTrim "$env:TemplateDirectoryPath" `
+            -PrintTopNLongest 25
+
+      - name: Clean up resources
+        if: always()
+        shell: pwsh
+        run: |
+          ./images.CI/linux-and-win/cleanup.ps1 `
+            -TempResourceGroupName "$env:TempResourceGroupName" `
+            -StorageAccount "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}"
