@@ -1,0 +1,248 @@
+name: Build Ubicloud Image
+# GitHub Action port from Azure Pipelines version
+# https://github.com/actions/runner-images/blob/main/images.CI/linux-and-win/azure-pipelines/image-generation.yml
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_types:
+        description: "Comma-separated list of image types to build"
+        required: true
+        default: ubuntu-20.04,ubuntu-22.04,ubuntu-24.04
+        type: string
+      image_version:
+        description: "Image version in semver format. You can get current version from the README.md file"
+        required: true
+        type: string
+      upload_image:
+        description: "Upload image to MinIO cluster"
+        default: true
+        type: boolean
+
+concurrency: ${{ inputs.image_version }}
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  AZURE_LOCATION: "Germany West Central"
+  RUN_VALIDATION_FLAG: "true"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-latest
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          selected_images="$(echo '${{ inputs.image_types }}' | jq -R -c 'split(",")')"
+          images="$(cat .github/images.json)"
+          matrix="$(echo $images | jq --argjson selecteds "$selected_images" '{include: .include | map(select(.image_type | IN($selecteds[])))}')"
+          echo "matrix<<EOF"$'\n'"$matrix"$'\n'EOF >> "$GITHUB_OUTPUT"
+
+  build:
+    needs: generate-matrix
+    name: build ${{ matrix.image_type }}
+    runs-on: ubicloud-standard-4
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 1.9.4
+
+      - name: Set variables
+        shell: pwsh
+        id: setvars
+        run: |
+          $ImageType = "${{ matrix.image_type }}"
+          $TemplateDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu/templates" } else { "windows/templates" }
+          $TemplateDirectoryPath = Join-Path "images" $TemplateDirectoryName | Resolve-Path
+          $TemplatePath = Join-Path $TemplateDirectoryPath "$ImageType.pkr.hcl"
+          "TemplateDirectoryPath=$TemplateDirectoryPath" >> $env:GITHUB_ENV
+          "TemplatePath=$TemplatePath" >> $env:GITHUB_ENV
+
+      - name: Build VM
+        shell: pwsh
+        run: |
+          ./images.CI/linux-and-win/build-image.ps1 `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TemplatePath "$env:TemplatePath" `
+            -ImageName "${{ env.MANAGED_IMAGE_NAME }}" `
+            -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+            -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+            -Location "${{ env.AZURE_LOCATION }}" `
+            -ImageVersion "${{ inputs.image_version }}"
+        env:
+          PACKER_LOG: 1
+          PACKER_LOG_PATH: "/tmp/packer-log.txt"
+
+      - name: Convert managed image to VHD
+        shell: pwsh
+        timeout-minutes: 120
+        run: |
+          ./images.CI/linux-and-win/convert-to-vhd.ps1 `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -Location "${{ env.AZURE_LOCATION }}" `
+            -ResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+            -ManagedImageName "${{ env.MANAGED_IMAGE_NAME }}" `
+            -GalleryName "GitHubRunnerImages" `
+            -GalleryImageSku "${{ matrix.image_type }}" `
+            -GalleryImageVersion "${{ inputs.image_version }}" `
+            -StorageAccountName "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
+            -StorageAccountContainerName "images" `
+            -VhdName "${{ env.MANAGED_IMAGE_NAME }}.vhd" `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+            -RemoveManagedImage
+
+      - name: Copy image artifacts to the separate directory
+        shell: pwsh
+        run: |
+          $ImageType = "${{ matrix.image_type }}"
+          $rootDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu" } else { "windows" }
+          $rootDirectoryPath = Join-Path "images" $rootDirectoryName | Resolve-Path
+
+          $readmePath = Join-Path $rootDirectoryPath "${{ matrix.readme }}"
+          $softwareReportPath = Join-Path $rootDirectoryPath "software-report.json"
+
+          New-Item artifact -ItemType Directory
+          Copy-Item -Path $readmePath -Destination "artifact/"
+          if (Test-Path $softwareReportPath) {
+              Copy-Item -Path $softwareReportPath -Destination "artifact/"
+          }
+
+      - name: Print markdown software report
+        shell: pwsh
+        run: |
+          Get-Content -Path "artifact/${{ matrix.readme }}"
+
+      - name: Print json software report
+        shell: pwsh
+        run: |
+          $softwareReportPath = "artifact/software-report.json"
+          if (Test-Path $softwareReportPath) {
+              Get-Content -Path $softwareReportPath
+          }
+
+      - name: Publish Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: "${{ env.MANAGED_IMAGE_NAME }}-artifact"
+          path: artifact/*
+
+      - name: Print provisioners duration
+        shell: pwsh
+        run: |
+          ./images.CI/measure-provisioners-duration.ps1 `
+            -PackerLogPath "/tmp/packer-log.txt" `
+            -PrefixToPathTrim "$env:TemplateDirectoryPath" `
+            -PrintTopNLongest 25
+
+      - name: Clean up resources
+        if: always()
+        shell: pwsh
+        run: |
+          ./images.CI/linux-and-win/cleanup.ps1 `
+            -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
+            -StorageAccount "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
+            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+            -TenantId "${{ secrets.AZURE_TENANT_ID }}"
+
+  upload:
+    if: ${{ inputs.upload_image }}
+    needs: [generate-matrix, build]
+    name: upload ${{ matrix.image_type }}
+    runs-on: ubicloud-standard-16
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
+      MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Install azcopy
+        run: |
+          curl -L10 -o azcopy_v10.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
+          tar --strip-components=1 --exclude=*.txt -xzvf azcopy_v10.tar.gz
+          rm azcopy_v10.tar.gz
+          sudo mv azcopy /usr/bin/azcopy
+          sudo chmod +x /usr/bin/azcopy
+          azcopy --version
+
+      - name: Install MinIO client
+        run: |
+          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          sudo mv mc /usr/bin/mc
+          sudo chmod +x /usr/bin/mc
+          mc --version
+
+      - name: Install qemu tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils
+
+      - name: Set MinIO root certificates
+        run: |
+          mkdir -p ~/.mc/certs/CAs
+          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
+          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
+          EOT
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Download the VHD image from Azure
+        env:
+          AZCOPY_CONCURRENCY_VALUE: 16
+        run: |
+          sas_token=$(az storage blob generate-sas \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --container-name images \
+            --name "${{ env.MANAGED_IMAGE_NAME }}.vhd" \
+            --permissions r \
+            --expiry "$(date --date='now +120 minutes' +'%Y-%m-%dT%H:%M:%SZ')" \
+            --full-uri \
+            --output tsv)
+
+          azcopy copy "$sas_token" "${{ env.MANAGED_IMAGE_NAME }}.vhd"
+
+      - name: Convert VHD to RAW
+        run: qemu-img convert -f vpc -O raw ${{ env.MANAGED_IMAGE_NAME }}.vhd ${{ env.MANAGED_IMAGE_NAME }}.raw
+
+      - name: Create MinIO bucket
+        run: mc mb --ignore-existing ubicloud/ubicloud-images
+
+      - name: Upload the RAW image to MinIO with version
+        run: |
+          mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw
+
+      - name: Calculate SHA256 checksum
+        run: |
+          sha256sum ${{ env.MANAGED_IMAGE_NAME }}.raw > ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
+          cat ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
+          mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw.sha256
