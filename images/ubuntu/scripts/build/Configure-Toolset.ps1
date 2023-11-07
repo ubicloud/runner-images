@@ -43,7 +43,7 @@ Write-Host "Configure toolcache tools environment..."
 $toolEnvConfigs = @{
     go = @{
         command          = "ln -s {0}/bin/* /usr/bin/"
-        variableTemplate = "GOROOT_{0}_{1}_X64"
+        variableTemplate = "GOROOT_{0}_{1}_$(Get-Arch 'X64' 'ARM64')"
     }
 }
 
@@ -55,8 +55,11 @@ foreach ($tool in $tools) {
 
     if (-not ([string]::IsNullOrEmpty($toolEnvConfig.variableTemplate))) {
         foreach ($toolVersion in $tool.versions) {
+            if ((Test-IsArm64) -and ($tool.name -eq "go") -and ($toolVersion -eq "1.20.*")) {
+                continue
+            }
             Write-Host "Set $($tool.name) $toolVersion environment variable..."
-            $toolPath = Get-TCToolVersionPath -ToolName $tool.name -ToolVersion $toolVersion -ToolArchitecture $tool.arch
+            $toolPath = Get-TCToolVersionPath -ToolName $tool.name -ToolVersion $toolVersion -ToolArchitecture "$(Get-Arch 'x64' 'arm64')"
             $envVariableName = $toolEnvConfig.variableTemplate -f $toolVersion.split(".")
 
             Add-GlobalEnvironmentVariable -Name $envVariableName -Value $toolPath
@@ -65,7 +68,7 @@ foreach ($tool in $tools) {
 
     # Invoke command and add env variable for the default tool version
     if (-not ([string]::IsNullOrEmpty($tool.default))) {
-        $toolDefaultPath = Get-TCToolVersionPath -ToolName $tool.name -ToolVersion $tool.default -ToolArchitecture $tool.arch
+        $toolDefaultPath = Get-TCToolVersionPath -ToolName $tool.name -ToolVersion $tool.default -ToolArchitecture "$(Get-Arch 'x64' 'arm64')"
 
         if (-not ([string]::IsNullOrEmpty($toolEnvConfig.defaultVariable))) {
             Write-Host "Set default $($toolEnvConfig.defaultVariable) for $($tool.name) $($tool.default) environment variable..."
