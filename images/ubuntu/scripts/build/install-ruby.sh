@@ -25,7 +25,7 @@ apt-get install libz-dev openssl libssl-dev
 echo "Install Ruby from toolset..."
 toolset_versions=$(get_toolset_value '.toolcache[] | select(.name | contains("Ruby")) | .versions[]')
 platform_version=$(get_toolset_value '.toolcache[] | select(.name | contains("Ruby")) | .platform_version')
-arch=$(get_toolset_value '.toolcache[] | select(.name | contains("Ruby")) | .arch')
+arch=$(get_arch "x64" "arm64")
 ruby_path="$AGENT_TOOLSDIRECTORY/Ruby"
 
 echo "Check if Ruby hostedtoolcache folder exist..."
@@ -36,6 +36,11 @@ fi
 for toolset_version in ${toolset_versions[@]}; do
     download_url=$(resolve_github_release_asset_url "ruby/ruby-builder" "test(\"ruby-${toolset_version}-ubuntu-${platform_version}-${arch}.tar.gz\")" "${toolset_version}" "false" "true")
     package_tar_name="${download_url##*/}"
+    if [[ -z "$package_tar_name" ]]; then
+        echo "Package for Ruby ${toolset_version} on Ubuntu ${platform_version} was not found. Skipping this version."
+        continue
+    fi
+
     ruby_version=$(echo "$package_tar_name" | cut -d'-' -f 2)
     ruby_version_path="$ruby_path/$ruby_version"
 
@@ -48,7 +53,7 @@ for toolset_version in ${toolset_versions[@]}; do
     echo "Expand '$package_tar_name' to the '$ruby_version_path' folder"
     tar xf "$package_archive_path" -C $ruby_version_path
 
-    complete_file_path="$ruby_version_path/x64.complete"
+    complete_file_path="$ruby_version_path/$(get_arch "x64" "arm64").complete"
     if [[ ! -f $complete_file_path ]]; then
         echo "Create complete file"
         touch $complete_file_path
