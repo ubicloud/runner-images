@@ -6,9 +6,19 @@
         "image_name": "github-ubuntu-2004-x64"
       },
       {
+        "image_type": "ubuntu-20.04.arm64",
+        "readme": "Ubuntu2004-Readme.md",
+        "image_name": "github-ubuntu-2004-arm64"
+      },
+      {
         "image_type": "ubuntu-22.04",
         "readme": "Ubuntu2204-Readme.md",
         "image_name": "github-ubuntu-2204-x64"
+      },
+      {
+        "image_type": "ubuntu-22.04.arm64",
+        "readme": "Ubuntu2204-Readme.md",
+        "image_name": "github-ubuntu-2204-arm64"
       },
       {
         "image_type": "ubuntu-24.04",

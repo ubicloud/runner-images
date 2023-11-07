@@ -79,7 +79,7 @@ export -f download_with_retry
 export -f extract_dotnet_sdk
 
 parallel --jobs 0 --halt soon,fail=1 \
-    'url="https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{}/dotnet-sdk-{}-linux-x64.tar.gz"; \
+    'url="https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{}/dotnet-sdk-{}-linux-'$(get_arch "x64" "arm64")'.tar.gz"; \
     download_with_retry $url' ::: "${sorted_sdks[@]}"
 
 find . -name "*.tar.gz" | parallel --halt soon,fail=1 'extract_dotnet_sdk {}'
