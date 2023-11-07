@@ -39,15 +39,18 @@ foreach ($tool in $tools) {
     foreach ($toolVersion in $tool.versions) {
         $asset = $assets | Where-Object version -like $toolVersion `
             | Select-Object -ExpandProperty files `
-            | Where-Object { ($_.platform -eq $tool.platform) -and ($_.arch -eq $tool.arch) -and ($_.platform_version -eq $tool.platform_version)} `
+            | Where-Object { ($_.platform -eq $tool.platform) -and ($(Get-Arch @("x64", "amd64") @("arm64", "aarch64")) -contains $_.arch) -and ($_.platform_version -eq $tool.platform_version)} `
             | Select-Object -First 1
 
         if (-not $asset) {
-            Write-Host "Asset for $($tool.name) $toolVersion $($tool.arch) not found in versions manifest"
+            Write-Host "Asset for $($tool.name) $toolVersion $(Get-Arch 'x64' 'arm64') not found in versions manifest"
+            if (Test-IsArm64) {
+                continue
+            }
             exit 1
         }
 
-        Write-Host "Installing $($tool.name) $toolVersion $($tool.arch)..."
+        Write-Host "Installing $($tool.name) $toolVersion $(Get-Arch 'x64' 'arm64')..."
         Install-Asset -ReleaseAsset $asset
     }
 
