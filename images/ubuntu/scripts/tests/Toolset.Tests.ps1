@@ -1,3 +1,5 @@
+Import-Module "$PSScriptRoot/../helpers/Common.Helpers.psm1" -DisableNameChecking
+
 Describe "Toolset" {
     $tools = (Get-ToolsetContent).toolcache
 
@@ -40,7 +42,10 @@ Describe "Toolset" {
                 }
 
                 $expectedVersionPath = Join-Path $env:AGENT_TOOLSDIRECTORY $toolName $version
-
+                if ((-not (Test-Path $expectedVersionPath)) -and (Test-IsArm64)) {
+                    Write-Host "$version version folder does not exists for $toolName $(Get-Arch 'x64' 'arm64')"
+                    continue
+                }
                 It "$version version folder exists" -TestCases @{ ExpectedVersionPath = $expectedVersionPath} {
                     $ExpectedVersionPath | Should -Exist
                 }
@@ -48,7 +53,7 @@ Describe "Toolset" {
                 $foundVersion = Get-Item $expectedVersionPath `
                     | Sort-Object -Property {[SemVer]$_.name} -Descending `
                     | Select-Object -First 1
-                $foundVersionPath = Join-Path $foundVersion $tool.arch
+                $foundVersionPath = Join-Path $foundVersion $(Get-Arch 'x64' 'arm64')
 
                 if ($toolExecs) {
                     foreach ($executable in $toolExecs["tools"]) {

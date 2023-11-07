@@ -36,7 +36,7 @@ source /etc/environment
 # under "usr/local/share to make sure that the script can be run multiple times idempotently.
 
 # Download actions/runner script
-download_url=$(resolve_github_release_asset_url "actions/runner" 'test("actions-runner-linux-x64-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
+download_url=$(resolve_github_release_asset_url "actions/runner" 'test("actions-runner-linux-'"$(get_arch "x64" "arm64")"'-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
 archive_name="${download_url##*/}"
 archive_path=$(download_with_retry "$download_url")
 
