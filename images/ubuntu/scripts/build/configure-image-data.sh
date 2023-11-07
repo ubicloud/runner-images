@@ -15,7 +15,13 @@ version_major=${os_version/.*/}
 version_wo_dot=${os_version/./}
 github_url="https://github.com/ubicloud/runner-images/blob"
 
-software_url="${github_url}/ubuntu${version_major}/${image_version_major}.${image_version_minor}/images/ubuntu/Ubuntu${version_wo_dot}-Readme.md"
+if [[ "$(arch)" == "aarch64" ]]; then
+  arch="-arm64"
+else
+  arch=""
+fi
+
+software_url="${github_url}/ubuntu${version_major}/${image_version_major}.${image_version_minor}/images/ubuntu/Ubuntu${version_wo_dot}${arch}-Readme.md"
 releaseUrl="https://github.com/ubicloud/runner-images/releases/tag/ubuntu${version_major}%2F${image_version_major}.${image_version_minor}"
 
 cat <<EOF > $imagedata_file
