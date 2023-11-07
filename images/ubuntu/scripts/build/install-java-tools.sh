@@ -5,6 +5,7 @@
 ################################################################################
 
 # Source the helpers for use with the script
+source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/install.sh
 source $HELPER_SCRIPTS/etc-environment.sh
 
@@ -12,7 +13,7 @@ create_java_environment_variable() {
     local java_version=$1
     local default=$2
 
-    local install_path_pattern="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    local install_path_pattern="/usr/lib/jvm/temurin-${java_version}-jdk-$(get_arch "amd64" "arm64")"
 
     if [[ ${default} == "True" ]]; then
         echo "Setting up JAVA_HOME variable to ${install_path_pattern}"
@@ -21,8 +22,8 @@ create_java_environment_variable() {
         update-java-alternatives -s ${install_path_pattern}
     fi
 
-    echo "Setting up JAVA_HOME_${java_version}_X64 variable to ${install_path_pattern}"
-    set_etc_environment_variable "JAVA_HOME_${java_version}_X64" "${install_path_pattern}"
+    echo "Setting up JAVA_HOME_${java_version}_$(get_arch "X64" "arm64") variable to ${install_path_pattern}"
+    set_etc_environment_variable "JAVA_HOME_${java_version}_$(get_arch "X64" "arm64")" "${install_path_pattern}"
 }
 
 install_open_jdk() {
@@ -30,7 +31,7 @@ install_open_jdk() {
 
     # Install Java from PPA repositories.
     apt-get -y install temurin-${java_version}-jdk=\*
-    java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-$(get_arch "amd64" "arm64")"
 
     java_toolcache_path="${AGENT_TOOLSDIRECTORY}/Java_Temurin-Hotspot_jdk"
 
@@ -52,10 +53,10 @@ install_open_jdk() {
     mkdir -p "${java_toolcache_version_path}"
 
     # Create a complete file
-    touch "${java_toolcache_version_path}/x64.complete"
+    touch "${java_toolcache_version_path}/$(get_arch "x64" "arm64").complete"
 
     # Create symlink for Java
-    ln -s ${java_version_path} "${java_toolcache_version_path}/x64"
+    ln -s ${java_version_path} "${java_toolcache_version_path}/$(get_arch "x64" "arm64")"
 
     # add extra permissions to be able execute command without sudo
     chmod -R 777 /usr/lib/jvm

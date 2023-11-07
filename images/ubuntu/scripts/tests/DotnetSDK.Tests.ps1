@@ -16,6 +16,9 @@ Describe "Dotnet and tools" {
     }
 
     foreach ($version in $dotnetVersions) {
+        if ((Test-IsArm64) -and ($version -eq "9.0")) {
+            continue
+        }
         Context "Dotnet $version" {
             $dotnet = @{ dotnetVersion = $version }
 

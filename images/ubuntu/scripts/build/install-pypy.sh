@@ -5,6 +5,7 @@
 ################################################################################
 
 # Source the helpers for use with the script
+source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/install.sh
 
 # This function installs PyPy using the specified arguments:
@@ -40,7 +41,7 @@ install_pypy() {
     # PyPy folder structure
     pypy_toolcache_path=$AGENT_TOOLSDIRECTORY/PyPy
     pypy_toolcache_version_path=$pypy_toolcache_path/$python_full_version
-    pypy_toolcache_version_arch_path=$pypy_toolcache_version_path/x64
+    pypy_toolcache_version_arch_path=$pypy_toolcache_version_path/$(get_arch "x64" "arm64")
 
     echo "Check if PyPy hostedtoolcache folder exist..."
     if [ ! -d $pypy_toolcache_path ]; then
@@ -67,7 +68,7 @@ install_pypy() {
     ./python -m pip install --ignore-installed pip
 
     echo "Create complete file"
-    touch $pypy_toolcache_version_path/x64.complete
+    touch $pypy_toolcache_version_path/$(get_arch "x64" "arm64").complete
 
     echo "Remove '$package_tar_temp_path'"
     rm -f $package_tar_temp_path
@@ -81,7 +82,7 @@ for toolset_version in $toolset_versions; do
     latest_major_pypy_version=$(echo $pypy_versions_json |
         jq -r --arg toolset_version $toolset_version '.[]
         | select((.python_version | startswith($toolset_version)) and .stable == true).files[]
-        | select(.arch == "x64" and .platform == "linux").download_url' | head -1)
+        | select(.arch == "'"$(get_arch "x64" "aarch64")"'" and .platform == "linux").download_url' | head -1)
     if [[ -z "$latest_major_pypy_version" ]]; then
         echo "Failed to get PyPy version '$toolset_version'"
         exit 1
