@@ -5,6 +5,7 @@
 ################################################################################
 
 # Source the helpers for use with the script
+source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/etc-environment.sh
 
 # Set env variable for vcpkg
@@ -13,6 +14,12 @@ set_etc_environment_variable "VCPKG_INSTALLATION_ROOT" "${VCPKG_INSTALLATION_ROO
 
 # Install vcpkg
 git clone https://github.com/Microsoft/vcpkg $VCPKG_INSTALLATION_ROOT
+
+if is_arm64; then
+  export VCPKG_FORCE_SYSTEM_BINARIES=1
+  set_etc_environment_variable "VCPKG_FORCE_SYSTEM_BINARIES" "1"
+  apt install -y ninja-build
+fi
 
 $VCPKG_INSTALLATION_ROOT/bootstrap-vcpkg.sh
 

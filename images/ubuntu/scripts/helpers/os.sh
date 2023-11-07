@@ -11,3 +11,15 @@ is_ubuntu22() {
 is_ubuntu24() {
     lsb_release -rs | grep -q '24.04'
 }
+
+is_arm64() {
+    test "$(arch)" = "aarch64"
+}
+
+get_arch() {
+    if is_arm64; then
+        echo "$2"
+    else
+        echo "$1"
+    fi
+}
