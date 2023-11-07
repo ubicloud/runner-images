@@ -64,6 +64,26 @@ function Test-IsUbuntu22 {
 
 function Test-IsUbuntu24 {
     return (lsb_release -rs) -eq "24.04"
+
+}
+
+function Test-IsArm64 {
+    return (arch) -eq "aarch64"
+}
+
+function Get-Arch {
+    param(
+        [Parameter(Position = 0, Mandatory = $true)]
+        [string] $amd64,
+        [Parameter(Position = 1, Mandatory = $true)]
+        [string] $arm64
+    )
+
+    if (Test-IsArm64) {
+        return $arm64
+    } else {
+        return $amd64
+    }
 }
 
 function Get-ToolsetContent {

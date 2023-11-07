@@ -12,7 +12,9 @@ on:
         type: choice
         options:
           - ubuntu-20.04
+          - ubuntu-20.04.arm64
           - ubuntu-22.04
+          - ubuntu-22.04.arm64
           - ubuntu-minimal
       image_suffix:
         description: "Suffix for image name, if not provided the image version"
@@ -51,7 +53,9 @@ jobs:
           $ReadmeName = switch ( $ImageType )
           {
               "ubuntu-20.04" { 'Ubuntu2004-Readme.md' }
+              "ubuntu-20.04.arm64" { 'Ubuntu2004-Readme.md' }
               "ubuntu-22.04" { 'Ubuntu2204-Readme.md' }
+              "ubuntu-22.04.arm64" { 'Ubuntu2204-Readme.md' }
               "ubuntu-minimal" { 'Ubuntu2204-Readme.md' }
           }
           "Readme_Name=$ReadmeName" >> $env:GITHUB_ENV
@@ -162,7 +166,7 @@ jobs:
             -TenantId "${{ secrets.AZURE_TENANT_ID }}"
 
       - name: Send notification
-        if: success()
+        if: false
         uses: slackapi/slack-github-action@v1.24.0
         with:
           payload: |
