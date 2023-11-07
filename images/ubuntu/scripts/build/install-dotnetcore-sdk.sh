@@ -45,6 +45,9 @@ EOF
 apt-get update
 
 for latest_package in ${latest_dotnet_packages[@]}; do
+    if is_arm64 && [ "$latest_package" = "dotnet-sdk-9.0" ]; then
+        continue
+    fi
     echo "Determining if .NET Core ($latest_package) is installed"
     if ! dpkg -S $latest_package &> /dev/null; then
         echo "Could not find .NET Core ($latest_package), installing..."
@@ -79,7 +82,7 @@ export -f download_with_retry
 export -f extract_dotnet_sdk
 
 parallel --jobs 0 --halt soon,fail=1 \
-    'url="https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{}/dotnet-sdk-{}-linux-x64.tar.gz"; \
+    'url="https://dotnetcli.blob.core.windows.net/dotnet/Sdk/{}/dotnet-sdk-{}-linux-'$(get_arch "x64" "arm64")'.tar.gz"; \
     download_with_retry $url' ::: "${sorted_sdks[@]}"
 
 find . -name "*.tar.gz" | parallel --halt soon,fail=1 'extract_dotnet_sdk {}'

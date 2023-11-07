@@ -54,6 +54,11 @@ if [[ ! -d $ruby_path ]]; then
     mkdir -p $ruby_path
 fi
 
+if is_arm64; then
+    git clone https://github.com/rbenv/ruby-build.git
+    ./ruby-build/install.sh
+fi
+
 for toolset_version in ${toolset_versions[@]}; do
     package_tar_name=$(echo "$package_tar_names" | grep "^ruby-${toolset_version}-ubuntu-${platform_version}.tar.gz$" | sort -V | tail -1)
     ruby_version=$(echo "$package_tar_name" | cut -d'-' -f 2)
@@ -62,18 +67,26 @@ for toolset_version in ${toolset_versions[@]}; do
     echo "Create Ruby $ruby_version directory..."
     mkdir -p $ruby_version_path
 
-    echo "Downloading tar archive $package_tar_name"
-    download_url="https://github.com/ruby/ruby-builder/releases/download/toolcache/${package_tar_name}"
-    package_archive_path=$(download_with_retry "$download_url")
+    if is_arm64; then
+        ruby-build "$ruby_version" "$ruby_version_path/arm64"
+    else
+        echo "Downloading tar archive $package_tar_name"
+        download_url="https://github.com/ruby/ruby-builder/releases/download/toolcache/${package_tar_name}"
+        package_archive_path=$(download_with_retry "$download_url")
 
-    echo "Expand '$package_tar_name' to the '$ruby_version_path' folder"
-    tar xf "$package_archive_path" -C $ruby_version_path
+        echo "Expand '$package_tar_name' to the '$ruby_version_path' folder"
+        tar xf "$package_archive_path" -C $ruby_version_path
+    fi
 
-    complete_file_path="$ruby_version_path/x64.complete"
+    complete_file_path="$ruby_version_path/$(get_arch "x64" "arm64").complete"
     if [[ ! -f $complete_file_path ]]; then
         echo "Create complete file"
         touch $complete_file_path
     fi
 done
+
+if is_arm64; then
+    rm -rf ruby-build
+fi
 
 invoke_tests "Tools" "Ruby"

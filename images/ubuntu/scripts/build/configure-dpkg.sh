@@ -33,6 +33,10 @@ EOF
 
 # Install libicu70 package for Ubuntu 24
 if  is_ubuntu24 ; then
-  wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb
-  sudo apt-get install -y ./libicu70_70.1-2_amd64.deb
+    if is_arm64; then
+        echo "Couldn't find libicu70 package for arm64"
+    else
+        wget http://archive.ubuntu.com/ubuntu/pool/main/i/icu/libicu70_70.1-2_amd64.deb
+        sudo apt-get install -y ./libicu70_70.1-2_amd64.deb
+    fi
 fi
