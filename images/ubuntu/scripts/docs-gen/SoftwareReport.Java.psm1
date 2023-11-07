@@ -5,7 +5,7 @@ function Get-JavaVersionsTable {
         $majorVersion = $_.Name.split(".")[0]
         $fullVersion = $_.Name.Replace("-", "+")
         $defaultJavaPath = $env:JAVA_HOME
-        $javaPath = Get-Item env:JAVA_HOME_${majorVersion}_X64
+        $javaPath = Get-Item [System.Environment]::GetEnvironmentVariable("JAVA_HOME_${majorVersion}_$(Get-Arch 'X64' 'arm64')")
 
         $defaultPostfix = ($javaPath.Value -eq $defaultJavaPath) ? " (default)" : ""
 
