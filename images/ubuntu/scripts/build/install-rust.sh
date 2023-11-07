@@ -11,6 +11,10 @@ source $HELPER_SCRIPTS/os.sh
 export RUSTUP_HOME=/etc/skel/.rustup
 export CARGO_HOME=/etc/skel/.cargo
 
+if is_ubuntu20 && is_arm64; then
+    apt-get install openssl libssl-dev
+fi
+
 curl -fsSL https://sh.rustup.rs | sh -s -- -y --default-toolchain=stable --profile=minimal
 
 # Initialize environment variables
