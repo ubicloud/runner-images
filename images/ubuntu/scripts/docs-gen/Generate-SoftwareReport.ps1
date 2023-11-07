@@ -46,8 +46,10 @@ if (Test-IsUbuntu20) {
     $languageAndRuntime.AddToolVersion("Erlang rebar3", $(Get-ErlangRebar3Version))
 }
 $languageAndRuntime.AddToolVersionsListInline("GNU C++", $(Get-CPPVersions), "^\d+")
-$languageAndRuntime.AddToolVersionsListInline("GNU Fortran", $(Get-FortranVersions), "^\d+")
-$languageAndRuntime.AddToolVersion("Julia", $(Get-JuliaVersion))
+if (-not $(Test-IsArm64)) {
+    $languageAndRuntime.AddToolVersionsListInline("GNU Fortran", $(Get-FortranVersions), "^\d+")
+    $languageAndRuntime.AddToolVersion("Julia", $(Get-JuliaVersion))
+}
 $languageAndRuntime.AddToolVersion("Kotlin", $(Get-KotlinVersion))
 if (-not $(Test-IsUbuntu24)) {
     $languageAndRuntime.AddToolVersion("Mono", $(Get-MonoVersion))
@@ -57,16 +59,20 @@ $languageAndRuntime.AddToolVersion("Node.js", $(Get-NodeVersion))
 $languageAndRuntime.AddToolVersion("Perl", $(Get-PerlVersion))
 $languageAndRuntime.AddToolVersion("Python", $(Get-PythonVersion))
 $languageAndRuntime.AddToolVersion("Ruby", $(Get-RubyVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $languageAndRuntime.AddToolVersion("Swift", $(Get-SwiftVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $languageAndRuntime.AddToolVersion("Swift", $(Get-SwiftVersion))
+    }
 }
 
 # Package Management
 $packageManagement = $installedSoftware.AddHeader("Package Management")
 $packageManagement.AddToolVersion("cpan", $(Get-CpanVersion))
 $packageManagement.AddToolVersion("Helm", $(Get-HelmVersion))
-$packageManagement.AddToolVersion("Homebrew", $(Get-HomebrewVersion))
-$packageManagement.AddToolVersion("Miniconda", $(Get-MinicondaVersion))
+if (-not $(Test-IsArm64)) {
+    $packageManagement.AddToolVersion("Homebrew", $(Get-HomebrewVersion))
+    $packageManagement.AddToolVersion("Miniconda", $(Get-MinicondaVersion))
+}
 $packageManagement.AddToolVersion("Npm", $(Get-NpmVersion))
 if (-not $(Test-IsUbuntu24)) {
     $packageManagement.AddToolVersion("NuGet", $(Get-NuGetVersion))
@@ -78,12 +84,15 @@ $packageManagement.AddToolVersion("RubyGems", $(Get-GemVersion))
 $packageManagement.AddToolVersion("Vcpkg", $(Get-VcpkgVersion))
 $packageManagement.AddToolVersion("Yarn", $(Get-YarnVersion))
 $packageManagement.AddHeader("Environment variables").AddTable($(Build-PackageManagementEnvironmentTable))
-$packageManagement.AddHeader("Homebrew note").AddNote(@'
+if (-not $(Test-IsArm64)) {
+    $packageManagement.AddHeader("Homebrew note").AddNote(@'
 Location: /home/linuxbrew
 Note: Homebrew is pre-installed on image but not added to PATH.
 run the eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)" command
 to accomplish this.
 '@)
+}
+
 
 # Project Management
 $projectManagement = $installedSoftware.AddHeader("Project Management")
@@ -91,8 +100,10 @@ $projectManagement.AddToolVersion("Ant", $(Get-AntVersion))
 $projectManagement.AddToolVersion("Gradle", $(Get-GradleVersion))
 $projectManagement.AddToolVersion("Lerna", $(Get-LernaVersion))
 $projectManagement.AddToolVersion("Maven", $(Get-MavenVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $projectManagement.AddToolVersion("Sbt", $(Get-SbtVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $projectManagement.AddToolVersion("Sbt", $(Get-SbtVersion))
+    }
 }
 
 # Tools
@@ -104,10 +115,14 @@ if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
 $tools.AddToolVersion("AzCopy", $(Get-AzCopyVersion))
 $tools.AddToolVersion("Bazel", $(Get-BazelVersion))
 $tools.AddToolVersion("Bazelisk", $(Get-BazeliskVersion))
-$tools.AddToolVersion("Bicep", $(Get-BicepVersion))
+if (-not $(Test-IsArm64)) {
+    $tools.AddToolVersion("Bicep", $(Get-BicepVersion))
+}
 $tools.AddToolVersion("Buildah", $(Get-BuildahVersion))
 $tools.AddToolVersion("CMake", $(Get-CMakeVersion))
-$tools.AddToolVersion("CodeQL Action Bundle", $(Get-CodeQLBundleVersion))
+if (-not $(Test-IsArm64)) {
+    $tools.AddToolVersion("CodeQL Action Bundle", $(Get-CodeQLBundleVersion))
+}
 $tools.AddToolVersion("Docker Amazon ECR Credential Helper", $(Get-DockerAmazonECRCredHelperVersion))
 $tools.AddToolVersion("Docker Compose v2", $(Get-DockerComposeV2Version))
 $tools.AddToolVersion("Docker-Buildx", $(Get-DockerBuildxVersion))
@@ -118,9 +133,12 @@ $tools.AddToolVersion("Git", $(Get-GitVersion))
 $tools.AddToolVersion("Git LFS", $(Get-GitLFSVersion))
 $tools.AddToolVersion("Git-ftp", $(Get-GitFTPVersion))
 $tools.AddToolVersion("Haveged", $(Get-HavegedVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $tools.AddToolVersion("Heroku", $(Get-HerokuVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $tools.AddToolVersion("Heroku", $(Get-HerokuVersion))
+    }
 }
+
 if (Test-IsUbuntu20) {
     $tools.AddToolVersion("HHVM (HipHop VM)", $(Get-HHVMVersion))
 }
@@ -128,8 +146,10 @@ $tools.AddToolVersion("jq", $(Get-JqVersion))
 $tools.AddToolVersion("Kind", $(Get-KindVersion))
 $tools.AddToolVersion("Kubectl", $(Get-KubectlVersion))
 $tools.AddToolVersion("Kustomize", $(Get-KustomizeVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $tools.AddToolVersion("Leiningen", $(Get-LeiningenVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $tools.AddToolVersion("Leiningen", $(Get-LeiningenVersion))
+    }
 }
 $tools.AddToolVersion("MediaInfo", $(Get-MediainfoVersion))
 $tools.AddToolVersion("Mercurial", $(Get-HGVersion))
@@ -149,8 +169,10 @@ if (Test-IsUbuntu20) {
 }
 $tools.AddToolVersion("Podman", $(Get-PodManVersion))
 $tools.AddToolVersion("Pulumi", $(Get-PulumiVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $tools.AddToolVersion("R", $(Get-RVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $tools.AddToolVersion("R", $(Get-RVersion))
+    }
 }
 $tools.AddToolVersion("Skopeo", $(Get-SkopeoVersion))
 $tools.AddToolVersion("Sphinx Open Source Search Server", $(Get-SphinxVersion))
@@ -164,8 +186,10 @@ $tools.AddToolVersion("zstd", $(Get-ZstdVersion))
 
 # CLI Tools
 $cliTools = $installedSoftware.AddHeader("CLI Tools")
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $cliTools.AddToolVersion("Alibaba Cloud CLI", $(Get-AlibabaCloudCliVersion))
+if (-not $(Test-IsArm64)) {
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $cliTools.AddToolVersion("Alibaba Cloud CLI", $(Get-AlibabaCloudCliVersion))
+    }
 }
 $cliTools.AddToolVersion("AWS CLI", $(Get-AWSCliVersion))
 $cliTools.AddToolVersion("AWS CLI Session Manager Plugin", $(Get-AWSCliSessionManagerPluginVersion))
@@ -176,8 +200,10 @@ $cliTools.AddToolVersion("GitHub CLI", $(Get-GitHubCliVersion))
 if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
     $cliTools.AddToolVersion("Google Cloud CLI", $(Get-GoogleCloudCLIVersion))
     $cliTools.AddToolVersion("Netlify CLI", $(Get-NetlifyCliVersion))
-    $cliTools.AddToolVersion("OpenShift CLI", $(Get-OCCliVersion))
-    $cliTools.AddToolVersion("ORAS CLI", $(Get-ORASCliVersion))
+    if (-not $(Test-IsArm64)) {
+        $cliTools.AddToolVersion("OpenShift CLI", $(Get-OCCliVersion))
+        $cliTools.AddToolVersion("ORAS CLI", $(Get-ORASCliVersion))
+    }
     $cliTools.AddToolVersion("Vercel CLI", $(Get-VerselCliversion))
 }
 
@@ -219,14 +245,16 @@ $rustToolsPackages.AddToolVersion("Rustfmt", $(Get-RustfmtVersion))
 
 # Browsers and Drivers
 $browsersTools = $installedSoftware.AddHeader("Browsers and Drivers")
-$browsersTools.AddToolVersion("Google Chrome", $(Get-ChromeVersion))
-$browsersTools.AddToolVersion("ChromeDriver", $(Get-ChromeDriverVersion))
-$browsersTools.AddToolVersion("Chromium", $(Get-ChromiumVersion))
-if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
-    $browsersTools.AddToolVersion("Microsoft Edge", $(Get-EdgeVersion))
-    $browsersTools.AddToolVersion("Microsoft Edge WebDriver", $(Get-EdgeDriverVersion))
+if (-not $(Test-IsArm64)) {
+    $browsersTools.AddToolVersion("Google Chrome", $(Get-ChromeVersion))
+    $browsersTools.AddToolVersion("ChromeDriver", $(Get-ChromeDriverVersion))
+    $browsersTools.AddToolVersion("Chromium", $(Get-ChromiumVersion))
+    if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
+        $browsersTools.AddToolVersion("Microsoft Edge", $(Get-EdgeVersion))
+        $browsersTools.AddToolVersion("Microsoft Edge WebDriver", $(Get-EdgeDriverVersion))
+    }
+    $browsersTools.AddToolVersion("Selenium server", $(Get-SeleniumVersion))
 }
-$browsersTools.AddToolVersion("Selenium server", $(Get-SeleniumVersion))
 if ((Test-IsUbuntu20) -or (Test-IsUbuntu22)) {
     $browsersTools.AddToolVersion("Mozilla Firefox", $(Get-FirefoxVersion))
     $browsersTools.AddToolVersion("Geckodriver", $(Get-GeckodriverVersion))
@@ -248,8 +276,10 @@ if (Test-IsUbuntu20) {
 $databasesTools.AddToolVersion("sqlite3", $(Get-SqliteVersion))
 $databasesTools.AddNode($(Build-PostgreSqlSection))
 $databasesTools.AddNode($(Build-MySQLSection))
-if (-not $(Test-IsUbuntu24)) {
-    $databasesTools.AddNode($(Build-MSSQLToolsSection))
+if (-not $(Test-IsArm64)) {
+    if (-not $(Test-IsUbuntu24)) {
+        $databasesTools.AddNode($(Build-MSSQLToolsSection))
+    }
 }
 
 # Cached Tools
@@ -267,12 +297,14 @@ $powerShellTools = $installedSoftware.AddHeader("PowerShell Tools")
 $powerShellTools.AddToolVersion("PowerShell", $(Get-PowershellVersion))
 $powerShellTools.AddHeader("PowerShell Modules").AddNodes($(Get-PowerShellModules))
 
-$installedSoftware.AddHeader("Web Servers").AddTable($(Build-WebServersTable))
+if (-not $(Test-IsArm64)) {
+    $installedSoftware.AddHeader("Web Servers").AddTable($(Build-WebServersTable))
 
-$androidTools = $installedSoftware.AddHeader("Android")
-$androidTools.AddTable($(Build-AndroidTable))
+    $androidTools = $installedSoftware.AddHeader("Android")
+    $androidTools.AddTable($(Build-AndroidTable))
 
-$androidTools.AddHeader("Environment variables").AddTable($(Build-AndroidEnvironmentTable))
+    $androidTools.AddHeader("Environment variables").AddTable($(Build-AndroidEnvironmentTable))
+}
 
 if (-not $(Test-IsUbuntu24)) {
     $installedSoftware.AddHeader("Cached Docker images").AddTable($(Get-CachedDockerImagesTableData))
