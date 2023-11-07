@@ -64,6 +64,11 @@ function Test-IsUbuntu22 {
 
 function Test-IsUbuntu24 {
     return (lsb_release -rs) -eq "24.04"
+
+}
+
+function Test-IsArm64 {
+    return (arch) -eq "aarch64"
 }
 
 function Get-ToolsetContent {

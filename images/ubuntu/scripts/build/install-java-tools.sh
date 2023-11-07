@@ -5,6 +5,7 @@
 ################################################################################
 
 # Source the helpers for use with the script
+source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/install.sh
 source $HELPER_SCRIPTS/etc-environment.sh
 
@@ -12,7 +13,11 @@ create_java_environment_variable() {
     local java_version=$1
     local default=$2
 
-    local install_path_pattern="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    if is_arm64; then
+        local install_path_pattern="/usr/lib/jvm/temurin-${java_version}-jdk-arm64"
+    else
+        local install_path_pattern="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    fi
 
     if [[ ${default} == "True" ]]; then
         echo "Setting up JAVA_HOME variable to ${install_path_pattern}"
@@ -21,8 +26,13 @@ create_java_environment_variable() {
         update-java-alternatives -s ${install_path_pattern}
     fi
 
-    echo "Setting up JAVA_HOME_${java_version}_X64 variable to ${install_path_pattern}"
-    set_etc_environment_variable "JAVA_HOME_${java_version}_X64" "${install_path_pattern}"
+    if is_arm64; then
+        echo "Setting up JAVA_HOME_${java_version}_arm64 variable to ${install_path_pattern}"
+        set_etc_environment_variable "JAVA_HOME_${java_version}_arm64" "${install_path_pattern}"
+    else
+        echo "Setting up JAVA_HOME_${java_version}_X64 variable to ${install_path_pattern}"
+        set_etc_environment_variable "JAVA_HOME_${java_version}_X64" "${install_path_pattern}"
+    fi
 }
 
 install_open_jdk() {
@@ -30,7 +40,11 @@ install_open_jdk() {
 
     # Install Java from PPA repositories.
     apt-get -y install temurin-${java_version}-jdk=\*
-    java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    if is_arm64; then
+        java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-arm64"
+    else
+        java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-amd64"
+    fi
 
     java_toolcache_path="${AGENT_TOOLSDIRECTORY}/Java_Temurin-Hotspot_jdk"
 
@@ -51,11 +65,19 @@ install_open_jdk() {
     echo "Java ${java_version} Toolcache Version Path: ${java_toolcache_version_path}"
     mkdir -p "${java_toolcache_version_path}"
 
-    # Create a complete file
-    touch "${java_toolcache_version_path}/x64.complete"
+    if is_arm64; then
+        # Create a complete file
+        touch "${java_toolcache_version_path}/arm64.complete"
 
-    # Create symlink for Java
-    ln -s ${java_version_path} "${java_toolcache_version_path}/x64"
+        # Create symlink for Java
+        ln -s ${java_version_path} "${java_toolcache_version_path}/arm64"
+    else
+        # Create a complete file
+        touch "${java_toolcache_version_path}/x64.complete"
+
+        # Create symlink for Java
+        ln -s ${java_version_path} "${java_toolcache_version_path}/x64"
+    fi
 
     # add extra permissions to be able execute command without sudo
     chmod -R 777 /usr/lib/jvm

@@ -9,15 +9,27 @@
 source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/install.sh
 
-awscliv2_archive_path=$(download_with_retry "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip")
+if is_arm64; then
+    awscliv2_archive_path=$(download_with_retry "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip")
+else
+    awscliv2_archive_path=$(download_with_retry "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip")
+fi
 unzip -qq "$awscliv2_archive_path" -d /tmp
 /tmp/aws/install -i /usr/local/aws-cli -b /usr/local/bin
 
-smplugin_deb_path=$(download_with_retry "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb")
+if is_arm64; then
+    smplugin_deb_path=$(download_with_retry "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_arm64/session-manager-plugin.deb")
+else
+    smplugin_deb_path=$(download_with_retry "https://s3.amazonaws.com/session-manager-downloads/plugin/latest/ubuntu_64bit/session-manager-plugin.deb")
+fi
 apt install "$smplugin_deb_path"
 
 # Download the latest aws sam cli release
-aws_sam_cli_archive_name="aws-sam-cli-linux-x86_64.zip"
+if is_arm64; then
+    aws_sam_cli_archive_name="aws-sam-cli-linux-arm64.zip"
+else
+    aws_sam_cli_archive_name="aws-sam-cli-linux-x86_64.zip"
+fi
 sam_cli_download_url=$(resolve_github_release_asset_url "aws/aws-sam-cli" "endswith(\"$aws_sam_cli_archive_name\")" "latest")
 aws_sam_cli_archive_path=$(download_with_retry "$sam_cli_download_url")
 

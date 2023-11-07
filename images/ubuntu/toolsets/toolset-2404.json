@@ -193,18 +193,32 @@
                 "version": "26.1.0"
             }
         ],
-        "plugins": [
-            {
-                "plugin": "buildx",
-                "version": "latest",
-                "asset": "linux-amd64"
-            },
-            {
-                "plugin": "compose",
-                "version": "latest",
-                "asset": "linux-x86_64"
-            }
-        ]
+        "plugins": {
+            "x64": [
+                {
+                    "plugin": "buildx",
+                    "version": "latest",
+                    "asset": "linux-amd64"
+                },
+                {
+                    "plugin": "compose",
+                    "version": "latest",
+                    "asset": "linux-x86_64"
+                }
+            ],
+            "arm64": [
+                {
+                    "plugin": "buildx",
+                    "version": "latest",
+                    "asset": "linux-arm64"
+                },            
+                {
+                    "plugin": "compose",
+                    "version": "latest",
+                    "asset": "linux-aarch64"
+                }
+            ]
+        } 
     },
     "pipx": [
         {

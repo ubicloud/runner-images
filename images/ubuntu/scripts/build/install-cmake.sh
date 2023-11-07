@@ -6,6 +6,7 @@
 ################################################################################
 
 # Source the helpers for use with the script
+source $HELPER_SCRIPTS/os.sh
 source $HELPER_SCRIPTS/install.sh
 
 # Test to see if the software in question is already installed, if not install it
@@ -14,12 +15,20 @@ if command -v cmake; then
     echo "cmake is already installed"
 else
 	# Download script to install CMake
-	download_url=$(resolve_github_release_asset_url "Kitware/CMake" "endswith(\"inux-x86_64.sh\")" "latest")
+	if is_arm64; then
+		download_url=$(resolve_github_release_asset_url "Kitware/CMake" "endswith(\"aarch64.sh\")" "latest")
+	else
+		download_url=$(resolve_github_release_asset_url "Kitware/CMake" "endswith(\"inux-x86_64.sh\")" "latest")
+	fi
 	curl -fsSL "${download_url}" -o cmakeinstall.sh
 
 	# Supply chain security - CMake
 	hash_url=$(resolve_github_release_asset_url "Kitware/CMake" "endswith(\"SHA-256.txt\")" "latest")
-	external_hash=$(get_checksum_from_url "$hash_url" "linux-x86_64.sh" "SHA256")
+	if is_arm64; then
+		external_hash=$(get_checksum_from_url "$hash_url" "linux-aarch64.sh" "SHA256")
+	else
+		external_hash=$(get_checksum_from_url "$hash_url" "linux-x86_64.sh" "SHA256")
+	fi
 	use_checksum_comparison "cmakeinstall.sh" "$external_hash"
 
 	# Install CMake and remove the install script
