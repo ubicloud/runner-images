@@ -143,8 +143,8 @@ source "azure-arm" "build_image" {
   image_publisher                        = "canonical"
   image_sku                              = "22_04-lts-arm64"
   location                               = "${var.location}"
-  managed_image_name                     = "${local.managed_image_name}"
-  managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
+  // managed_image_name                     = "${local.managed_image_name}"
+  // managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
   os_disk_size_gb                        = "50"
   os_type                                = "Linux"
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
@@ -155,6 +155,14 @@ source "azure-arm" "build_image" {
   virtual_network_resource_group_name    = "${var.virtual_network_resource_group_name}"
   virtual_network_subnet_name            = "${var.virtual_network_subnet_name}"
   vm_size                                = "${var.vm_size}"
+
+  shared_image_gallery_destination {
+      subscription = "${var.subscription_id}"
+      resource_group = "${var.managed_image_resource_group_name}"
+      gallery_name = "GitHubRunnerImages"
+      image_name = "RunnerImage-ubuntu-22.04.arm64"
+      image_version = "${var.image_version}"
+  }
 
   dynamic "azure_tag" {
     for_each = var.azure_tags
