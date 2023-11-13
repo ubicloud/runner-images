@@ -44,30 +44,51 @@ if ($ManagedImageName -like "*windows*") {
   throw "Unknown OS type for image '$ManagedImageName'"
 }
 
+if ($ManagedImageName -like "*arm*") {
+  $imageArchitecture = "Arm64"
+} elseif ($ManagedImageName -like "*ubuntu*") {
+  $imageArchitecture = "x64"
+} else {
+  throw "Unknown architecture for image '$ManagedImageName'"
+}
+
+if ($ManagedImageName -like "*arm*" -or $ManagedImageName -like "*ubuntu-24*") {
+  $imageGeneration = "V2"
+} elseif ($ManagedImageName -like "*ubuntu*") {
+  $imageGeneration = "V1"
+} else {
+  throw "Unknown generation for image '$ManagedImageName'"
+}
+
 $galleryImageExists = az sig image-definition list --resource-group $ResourceGroupName --gallery-name $GalleryName --query "[?name=='$imageDefinitionName']" -o tsv
 if ($null -eq $galleryImageExists) {
   az sig image-definition create `
     --resource-group $ResourceGroupName `
     --gallery-name $GalleryName `
     --gallery-image-definition $imageDefinitionName `
-    --publisher "GuthubImagesGeneration" `
+    --publisher "GithubImagesGeneration" `
     --offer "RunnerImage" `
     --sku $GalleryImageSku `
     --os-type $imageOsType `
-    --location $Location
+    --location $Location `
+    --architecture $imageArchitecture `
+    --hyper-v-generation $imageGeneration
 }
 
-# Create Image Version from existing Managed Image
+# # Create Image Version from existing Managed Image
 Write-Host "Creating Image Version '$GalleryImageVersion' from Managed Image '$ManagedImageName'..."
-az sig image-version create `
-  --resource-group $ResourceGroupName `
-  --gallery-name $GalleryName `
-  --gallery-image-definition $imageDefinitionName `
-  --gallery-image-version $GalleryImageVersion `
-  --managed-image "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Compute/images/$ManagedImageName" `
-  --target-regions $Location `
-  --replica-count 1 `
-  --location $Location
+$galleryImageVersionExists = az sig image-version list --resource-group $ResourceGroupName --gallery-name $GalleryName --gallery-image-name $imageDefinitionName --query "[?name=='$GalleryImageVersion']" -o tsv
+if ($null -eq $galleryImageVersionExists) {
+  az sig image-version create `
+    --resource-group $ResourceGroupName `
+    --gallery-name $GalleryName `
+    --gallery-image-definition $imageDefinitionName `
+    --gallery-image-version $GalleryImageVersion `
+    --managed-image "/subscriptions/$SubscriptionId/resourceGroups/$ResourceGroupName/providers/Microsoft.Compute/images/$ManagedImageName" `
+    --target-regions $Location `
+    --replica-count 1 `
+    --location $Location
+}
 
 # Create Azure Managed Disk from Shared Image Gallery
 Write-Host "Creating Azure Managed Disk '$ManagedImageName' from Shared Image Gallery..."
