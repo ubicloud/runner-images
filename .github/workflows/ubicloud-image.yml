@@ -19,6 +19,10 @@ on:
       image_suffix:
         description: "Suffix for image name, if not provided the image version"
         type: string
+      upload_image:
+        description: "Upload image to MinIO cluster"
+        default: true
+        type: boolean
 
 permissions:
   id-token: write
@@ -30,7 +34,10 @@ env:
 jobs:
   build:
     name: Build ${{ inputs.image_type }}
-    runs-on: ubuntu-latest
+    runs-on: ubicloud-standard-4
+    outputs:
+      image_name: ${{ steps.setvars.outputs.ManagedImageName }}
+      image_suffix: ${{ steps.setvars.outputs.ImageSuffix }}
     steps:
       - name: Check out code
         uses: actions/checkout@v3
@@ -42,6 +49,7 @@ jobs:
 
       - name: Set variables
         shell: pwsh
+        id: setvars
         run: |
           $ImageType = "${{ inputs.image_type }}"
           $TemplateDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu/templates" } else { "windows/templates" }
@@ -63,9 +71,11 @@ jobs:
           $ImageVersion = (Select-String -Path $readmePath -Pattern 'Image Version: ([0-9.]+)').Matches.Groups[1].Value
           $ImageSuffix = if ("${{ inputs.image_suffix }}") { "${{ inputs.image_suffix }}" } else { $ImageVersion }
           "ImageSuffix=$ImageSuffix" >> $env:GITHUB_ENV
+          "ImageSuffix=$ImageSuffix" >> $env:GITHUB_OUTPUT
 
           $ManagedImageName = "${{ inputs.image_type }}-$ImageSuffix"
           "ManagedImageName=$ManagedImageName" >> $env:GITHUB_ENV
+          "ManagedImageName=$ManagedImageName" >> $env:GITHUB_OUTPUT
 
           $VhdName = "$ManagedImageName.vhd"
           "VhdName=$VhdName" >> $env:GITHUB_ENV
@@ -165,41 +175,91 @@ jobs:
             -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
             -TenantId "${{ secrets.AZURE_TENANT_ID }}"
 
-      - name: Send notification
-        if: false
-        uses: slackapi/slack-github-action@v1.24.0
+  upload:
+    if: ${{ inputs.upload_image }}
+    runs-on: ubicloud-standard-16
+    needs: build
+    env:
+      IMAGE_NAME: ${{ needs.build.outputs.image_name }}
+      IMAGE_SUFFIX: ${{ needs.build.outputs.image_suffix }}
+      MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v3
+
+      - name: Install azcopy
+        run: |
+          curl -L10 -o azcopy_v10.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
+          tar --strip-components=1 --exclude=*.txt -xzvf azcopy_v10.tar.gz
+          rm azcopy_v10.tar.gz
+          sudo mv azcopy /usr/bin/azcopy
+          sudo chmod +x /usr/bin/azcopy
+          azcopy --version
+
+      - name: Install MinIO client
+        run: |
+          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          sudo mv mc /usr/bin/mc
+          sudo chmod +x /usr/bin/mc
+          mc --version
+
+      - name: Install qemu tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y qemu-utils
+
+      - name: Set MinIO root certificates
+        run: |
+          mkdir -p ~/.mc/certs/CAs
+          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
+          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
+          EOT
+
+      - name: Azure login
+        uses: azure/login@v1
         with:
-          payload: |
-            {
-              "text": "*New GitHub Image* :builder-2:",
-              "attachments": [
-                {
-                  "color": "A1E594",
-                  "fields": [
-                    {
-                      "title": "Image Name",
-                      "short": true,
-                      "value": "`${{ env.ManagedImageName }}`"
-                    },
-                    {
-                      "title": "Triggered By",
-                      "short": true,
-                      "value": "${{ github.actor }}"
-                    },
-                    {
-                      "title": "Reference",
-                      "short": true,
-                      "value": "<${{ github.server_url }}/${{ github.repository }}/commit/${{ github.sha }}|${{ github.ref_name }}>"
-                    },
-                    {
-                      "title": "Action",
-                      "short": true,
-                      "value": "<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.workflow }}>"
-                    }
-                  ]
-                }
-              ]
-            }
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Download the VHD image from Azure
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          AZCOPY_CONCURRENCY_VALUE: 16
+        run: |
+          sas_token=$(az storage blob generate-sas \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --container-name images \
+            --name "${{ env.IMAGE_NAME }}.vhd" \
+            --permissions r \
+            --expiry "$(date --date='now +120 minutes' +'%Y-%m-%dT%H:%M:%SZ')" \
+            --full-uri \
+            --output tsv)
+
+          azcopy copy "$sas_token" "${{ env.IMAGE_NAME }}.vhd"
+
+      - name: Convert VHD to RAW
+        run: qemu-img convert -f vpc -O raw ${{ env.IMAGE_NAME }}.vhd ${{ env.IMAGE_NAME }}.raw
+
+      - name: Create MinIO bucket
+        run: mc mb --ignore-existing ubicloud/ubicloud-images
+
+      - name: Set image name output
+        id: set_image_name
+        run: |
+          case "${{ inputs.image_type }}" in
+            "ubuntu-20.04") image_name="github-ubuntu-2004-x64" ;;
+            "ubuntu-20.04.arm64") image_name="github-ubuntu-2004-arm64" ;;
+            "ubuntu-22.04") image_name="github-ubuntu-2204-x64" ;;
+            "ubuntu-22.04.arm64") image_name="github-ubuntu-2204-arm64" ;;
+            "ubuntu-minimal") image_name="github-ubuntu-minimal-x64" ;;
+            "ubuntu-postgres") image_name="postgres-ubuntu-2204-x64" ;;
+          esac
+          echo "MINIO_IMAGE_NAME=$image_name-${{ env.IMAGE_SUFFIX }}" >> $GITHUB_OUTPUT
+
+      - name: Upload the RAW image to MinIO with version
+        run: |
+          mc cp ./${{ env.IMAGE_NAME }}.raw ubicloud/ubicloud-images/${{ steps.set_image_name.outputs.MINIO_IMAGE_NAME }}.raw
+
+      - name: Calculate SHA256 checksum
+        run: |
+          sha256sum ${{ env.IMAGE_NAME }}.raw > ${{ env.IMAGE_NAME }}.raw.sha256
+          cat ${{ env.IMAGE_NAME }}.raw.sha256
+          mc cp ./${{ env.IMAGE_NAME }}.raw.sha256 ubicloud/ubicloud-images/${{ steps.set_image_name.outputs.MINIO_IMAGE_NAME }}.raw.sha256
