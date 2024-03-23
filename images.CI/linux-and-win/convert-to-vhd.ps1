@@ -125,6 +125,12 @@ while ($true) {
     --account-key $targetKey `
     --query "properties.copy.status" -o tsv
 
+  if($LASTEXITCODE -ne 0) {
+    Write-Host "An error occurred that could not get blob status."
+    Start-Sleep -Seconds 15
+    continue
+  }
+
   if ($status -eq "success") {
     Write-Host "Copy completed successfully."
     break
