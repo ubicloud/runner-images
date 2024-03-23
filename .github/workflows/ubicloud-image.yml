@@ -103,6 +103,7 @@ jobs:
 
       - name: Convert managed image to VHD
         shell: pwsh
+        timeout-minutes: 120
         run: |
           ./images.CI/linux-and-win/convert-to-vhd.ps1 `
             -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
