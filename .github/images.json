@@ -11,6 +11,11 @@
       "image_name": "github-ubuntu-2204-arm64"
     },
     {
+      "image_type": "ubuntu-22.04.gpu",
+      "readme": "Ubuntu2204-Readme.md",
+      "image_name": "github-gpu-ubuntu-2204-x64"
+    },
+    {
       "image_type": "ubuntu-24.04",
       "readme": "Ubuntu2404-Readme.md",
       "image_name": "github-ubuntu-2404-x64"
