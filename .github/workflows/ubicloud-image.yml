@@ -8,7 +8,7 @@ on:
       image_types:
         description: "Comma-separated list of image types to build"
         required: true
-        default: ubuntu-20.04,ubuntu-20.04.arm64,ubuntu-22.04,ubuntu-22.04.arm64,ubuntu-24.04,ubuntu-24.04.arm64
+        default: ubuntu-20.04,ubuntu-20.04.arm64,ubuntu-22.04,ubuntu-22.04.arm64,ubuntu-22.04.gpu,ubuntu-24.04,ubuntu-24.04.arm64
         type: string
       image_version:
         description: "Image version in semver format. You can get current version from the README.md file"
