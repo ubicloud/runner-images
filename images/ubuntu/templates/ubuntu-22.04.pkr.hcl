@@ -425,6 +425,12 @@ build {
     scripts          = ["${path.root}/../scripts/ubicloud/setup-runner-user.sh"]
   }
 
+  // Update OpenSSH (https://ubuntu.com/security/CVE-2024-6387)
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["sudo apt-get update -qq && sudo apt -qq -y satisfy 'openssh-server (>= 1:8.9p1-3ubuntu0.10)'"]
+  }
+
   // It's Hyper-V Key Value Pair daemon, which is not needed in Ubicloud
   // It blocks booting the VM if it's not disabled
   provisioner "shell" {
