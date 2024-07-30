@@ -16,6 +16,7 @@ on:
           - ubuntu-22.04
           - ubuntu-22.04.arm64
           - ubuntu-22.04.gpu
+          - ubuntu-24.04
           - ubuntu-minimal
       image_suffix:
         description: "Suffix for image name, if not provided the image version"
@@ -66,6 +67,7 @@ jobs:
               "ubuntu-22.04" { 'Ubuntu2204-Readme.md' }
               "ubuntu-22.04.arm64" { 'Ubuntu2204-Readme.md' }
               "ubuntu-22.04.gpu" { 'Ubuntu2204-Readme.md' }
+              "ubuntu-24.04" { 'Ubuntu2404-Readme.md' }
               "ubuntu-minimal" { 'Ubuntu2204-Readme.md' }
           }
           "Readme_Name=$ReadmeName" >> $env:GITHUB_ENV
@@ -253,6 +255,7 @@ jobs:
             "ubuntu-22.04") image_name="github-ubuntu-2204-x64" ;;
             "ubuntu-22.04.arm64") image_name="github-ubuntu-2204-arm64" ;;
             "ubuntu-22.04.gpu") image_name="github-gpu-ubuntu-2204-x64" ;;
+            "ubuntu-24.04") image_name="github-ubuntu-2404-x64" ;;
             "ubuntu-minimal") image_name="github-ubuntu-minimal-x64" ;;
             "ubuntu-postgres") image_name="postgres-ubuntu-2204-x64" ;;
           esac

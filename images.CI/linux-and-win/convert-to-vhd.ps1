@@ -52,6 +52,14 @@ if ($ManagedImageName -like "*arm*") {
   throw "Unknown architecture for image '$ManagedImageName'"
 }
 
+if ($ManagedImageName -like "*arm*" -or $ManagedImageName -like "*ubuntu-24*") {
+  $imageGeneration = "V2"
+} elseif ($ManagedImageName -like "*ubuntu*") {
+  $imageGeneration = "V1"
+} else {
+  throw "Unknown generation for image '$ManagedImageName'"
+}
+
 $galleryImageExists = az sig image-definition list --resource-group $ResourceGroupName --gallery-name $GalleryName --query "[?name=='$imageDefinitionName']" -o tsv
 if ($null -eq $galleryImageExists) {
   az sig image-definition create `
@@ -63,7 +71,8 @@ if ($null -eq $galleryImageExists) {
     --sku $GalleryImageSku `
     --os-type $imageOsType `
     --location $Location `
-    --architecture $imageArchitecture
+    --architecture $imageArchitecture `
+    --hyper-v-generation $imageGeneration
 }
 
 # # Create Image Version from existing Managed Image

@@ -151,10 +151,10 @@ source "azure-arm" "build_image" {
   client_secret                          = "${var.client_secret}"
   image_offer                            = "ubuntu-24_04-lts"
   image_publisher                        = "canonical"
-  image_sku                              = "server-gen1"
+  image_sku                              = "server"
   location                               = "${var.location}"
-  managed_image_name                     = "${local.managed_image_name}"
-  managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
+  // managed_image_name                     = "${local.managed_image_name}"
+  // managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
   os_disk_size_gb                        = "75"
   os_type                                = "Linux"
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
@@ -165,6 +165,14 @@ source "azure-arm" "build_image" {
   virtual_network_resource_group_name    = "${var.virtual_network_resource_group_name}"
   virtual_network_subnet_name            = "${var.virtual_network_subnet_name}"
   vm_size                                = "${var.vm_size}"
+
+  shared_image_gallery_destination {
+      subscription = "${var.subscription_id}"
+      resource_group = "${var.managed_image_resource_group_name}"
+      gallery_name = "GitHubRunnerImages"
+      image_name = "RunnerImage-ubuntu-24.04"
+      image_version = "${var.image_version}"
+  }
 
   dynamic "azure_tag" {
     for_each = var.azure_tags
@@ -385,9 +393,23 @@ provisioner "shell" {
     scripts          = ["${path.root}/../scripts/build/configure-system.sh"]
   }
 
-  provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
-  }
+  // provisioner "shell" {
+  //   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  //   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  // }
 
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+      "${path.root}/../scripts/ubicloud/setup-systemd-resolved.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+  }
 }
