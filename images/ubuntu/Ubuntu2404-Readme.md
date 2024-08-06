@@ -1,13 +1,7 @@
-| Announcements |
-|-|
-| [[Ubuntu] Breaking Change: runner user will have UID 1001 instead of 1000 for larger runners](https://github.com/actions/runner-images/issues/10936) |
-| [[Ubuntu 20 and 22] Node.js version 16 will be removed on November 18,2024.](https://github.com/actions/runner-images/issues/10896) |
-| [Ubuntu-latest workflows will use Ubuntu-24.04 image](https://github.com/actions/runner-images/issues/10636) |
-***
 # Ubuntu 24.04
 - OS Version: 24.04.1 LTS
-- Kernel Version: 6.8.0-1017-azure
-- Image Version: 20241124.1.0
+- Kernel Version: 6.8.0-1016-azure
+- Image Version: 20241016.1.0
 - Systemd version: 255.4-1ubuntu8.4
 
 ## Installed Software
@@ -30,15 +24,15 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.16.3
-- Homebrew 4.4.6
+- Helm 3.16.2
+- Homebrew 4.4.3
 - Miniconda 24.9.2
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
 - Pipx 1.7.1
 - RubyGems 3.4.20
-- Vcpkg (build from commit 5e5d0e1cd)
+- Vcpkg (build from commit 4f746bc66)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -57,19 +51,19 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.14
-- Gradle 8.11.1
+- Gradle 8.10.2
 - Lerna 8.1.9
 - Maven 3.8.8
 
 ### Tools
-- Ansible 2.18.0
-- AzCopy 10.27.1 - available by `azcopy` and `azcopy10` aliases
-- Bazel 7.4.1
-- Bazelisk 1.24.0
-- Bicep 0.31.92
+- Ansible 2.17.5
+- AzCopy 10.27.0 - available by `azcopy` and `azcopy10` aliases
+- Bazel 7.4.0
+- Bazelisk 1.22.1
+- Bicep 0.30.23
 - Buildah 1.33.7
-- CMake 3.31.1
-- CodeQL Action Bundle 2.19.3
+- CMake 3.30.5
+- CodeQL Action Bundle 2.19.2
 - Docker Amazon ECR Credential Helper 0.9.0
 - Docker Compose v2 2.27.1
 - Docker-Buildx 0.18.0
@@ -81,8 +75,8 @@ to accomplish this.
 - Git-ftp 1.6.0
 - Haveged 1.9.14
 - jq 1.7
-- Kind 0.25.0
-- Kubectl 1.31.3
+- Kind 0.24.0
+- Kubectl 1.31.2
 - Kustomize 5.5.0
 - MediaInfo 24.01
 - Mercurial 6.7.2
@@ -94,7 +88,7 @@ to accomplish this.
 - Packer 1.11.2
 - Parcel 2.13.0
 - Podman 4.9.3
-- Pulumi 3.141.0
+- Pulumi 3.137.0
 - Skopeo 1.13.3
 - Sphinx Open Source Search Server 2.2.11
 - yamllint 1.35.1
@@ -102,13 +96,12 @@ to accomplish this.
 - zstd 1.5.6
 
 ### CLI Tools
-- AWS CLI 2.22.4
-- AWS CLI Session Manager Plugin 1.2.694.0
-- AWS SAM CLI 1.131.0
-- Azure CLI 2.67.0
+- AWS CLI 2.19.1
+- AWS CLI Session Manager Plugin 1.2.677.0
+- AWS SAM CLI 1.127.0
+- Azure CLI 2.65.0
 - Azure CLI (azure-devops) 1.0.1
-- GitHub CLI 2.62.0
-- Google Cloud CLI 502.0.0
+- GitHub CLI 2.60.1
 
 ### Java
 | Version              | Environment Variable |
@@ -142,13 +135,13 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.7.1
 
 ### Browsers and Drivers
-- Google Chrome 131.0.6778.85
-- ChromeDriver 131.0.6778.85
-- Chromium 131.0.6778.0
-- Microsoft Edge 131.0.2903.63
-- Microsoft Edge WebDriver 131.0.2903.52
+- Google Chrome 130.0.6723.91
+- ChromeDriver 130.0.6723.91
+- Chromium 130.0.6723.0
+- Microsoft Edge 130.0.2849.56
+- Microsoft Edge WebDriver 130.0.2849.68
 - Selenium server 4.26.0
-- Mozilla Firefox 132.0.2
+- Mozilla Firefox 132.0
 - Geckodriver 0.35.0
 
 #### Environment variables
@@ -191,9 +184,8 @@ Use the following command as a part of your job to start the service: 'sudo syst
 - 1.23.3
 
 #### Node.js
-- 18.20.5
-- 20.18.1
-- 22.11.0
+- 18.20.4
+- 20.18.0
 
 #### Python
 - 3.9.20
@@ -314,4 +306,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1build0.1 |
 | zip                    | 3.0-13build1                |
 | zsync                  | 0.6.2-5build1               |
-
