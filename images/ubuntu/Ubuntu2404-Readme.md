@@ -5,8 +5,8 @@
 # Ubuntu 24.04
 - OS Version: 24.04.2 LTS
 - Kernel Version: 6.8.0-1021-azure
-- Image Version: 20250323.1.0
-- Systemd version: 255.4-1ubuntu8.6
+- Image Version: 20250302.1.1
+- Systemd version: 255.4-1ubuntu8.5
 
 ## Installed Software
 
@@ -28,15 +28,15 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.17.2
-- Homebrew 4.4.25
+- Helm 3.17.1
+- Homebrew 4.4.23
 - Miniconda 25.1.1
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
 - Pipx 1.7.1
 - RubyGems 3.4.20
-- Vcpkg (build from commit a76b33254a)
+- Vcpkg (build from commit 418da99d5a)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -101,13 +101,13 @@ to accomplish this.
 - Ninja 1.12.1
 
 ### CLI Tools
-- AWS CLI 2.25.1
+- AWS CLI 2.24.18
 - AWS CLI Session Manager Plugin 1.2.707.0
-- AWS SAM CLI 1.135.0
+- AWS SAM CLI 1.134.0
 - Azure CLI 2.70.0
 - Azure CLI (azure-devops) 1.0.1
-- GitHub CLI 2.69.0
-- Google Cloud CLI 515.0.0
+- GitHub CLI 2.68.0
+- Google Cloud CLI 513.0.0
 
 ### Java
 | Version             | Environment Variable |
@@ -141,13 +141,13 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 134.0.6998.165
-- ChromeDriver 134.0.6998.165
+- Google Chrome 134.0.6998.35
+- ChromeDriver 134.0.6998.35
 - Chromium 134.0.6998.0
-- Microsoft Edge 134.0.3124.83
-- Microsoft Edge WebDriver 134.0.3124.83
-- Selenium server 4.30.0
-- Mozilla Firefox 136.0.2
+- Microsoft Edge 133.0.3065.92
+- Microsoft Edge WebDriver 133.0.3065.92
+- Selenium server 4.29.0
+- Mozilla Firefox 136.0
 - Geckodriver 0.36.0
 
 #### Environment variables
@@ -322,4 +322,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1build0.1 |
 | zip                    | 3.0-13ubuntu0.2             |
 | zsync                  | 0.6.2-5build1               |
-

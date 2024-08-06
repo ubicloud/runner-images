@@ -5,7 +5,7 @@
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
 - Kernel Version: 6.8.0-1021-azure
-- Image Version: 20250323.1.0
+- Image Version: 20250302.1.1
 - Systemd version: 249.11-0ubuntu3.12
 
 ## Installed Software
@@ -30,8 +30,8 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.17.2
-- Homebrew 4.4.25
+- Helm 3.17.1
+- Homebrew 4.4.23
 - Miniconda 25.1.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
@@ -39,7 +39,7 @@
 - Pip3 22.0.2
 - Pipx 1.7.1
 - RubyGems 3.3.5
-- Vcpkg (build from commit a76b33254a)
+- Vcpkg (build from commit 418da99d5a)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -99,30 +99,30 @@ to accomplish this.
 - Packer 1.12.0
 - Parcel 2.14.1
 - Podman 3.4.4
-- Pulumi 3.157.0
+- Pulumi 3.153.1
 - R 4.4.3
 - Skopeo 1.4.1
 - Sphinx Open Source Search Server 2.2.11
 - SVN 1.14.1
-- Terraform 1.11.2
-- yamllint 1.37.0
+- Terraform 1.11.1
+- yamllint 1.35.1
 - yq 4.45.1
 - zstd 1.5.7
 - Ninja 1.12.1
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.0.260
-- AWS CLI 2.25.1
+- Alibaba Cloud CLI 3.0.256
+- AWS CLI 2.24.18
 - AWS CLI Session Manager Plugin 1.2.707.0
-- AWS SAM CLI 1.135.0
+- AWS SAM CLI 1.134.0
 - Azure CLI 2.70.0
 - Azure CLI (azure-devops) 1.0.1
-- GitHub CLI 2.69.0
-- Google Cloud CLI 515.0.0
-- Netlify CLI 19.0.3
-- OpenShift CLI 4.18.5
+- GitHub CLI 2.68.0
+- Google Cloud CLI 513.0.0
+- Netlify CLI 19.0.2
+- OpenShift CLI 4.18.3
 - ORAS CLI 1.2.2
-- Vercel CLI 41.4.1
+- Vercel CLI 41.3.1
 
 ### Java
 | Version             | Environment Variable |
@@ -161,13 +161,13 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 134.0.6998.165
-- ChromeDriver 134.0.6998.165
+- Google Chrome 134.0.6998.35
+- ChromeDriver 134.0.6998.35
 - Chromium 134.0.6998.0
-- Microsoft Edge 134.0.3124.83
-- Microsoft Edge WebDriver 134.0.3124.83
-- Selenium server 4.30.0
-- Mozilla Firefox 136.0.2
+- Microsoft Edge 133.0.3065.92
+- Microsoft Edge WebDriver 133.0.3065.92
+- Selenium server 4.29.0
+- Mozilla Firefox 136.0
 - Geckodriver 0.36.0
 
 #### Environment variables
@@ -389,4 +389,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.5-2ubuntu1                      |
 | zip                    | 3.0-12build2                        |
 | zsync                  | 0.6.2-3ubuntu1                      |
-
