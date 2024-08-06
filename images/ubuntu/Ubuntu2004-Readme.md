@@ -1,12 +1,7 @@
-| Announcements |
-|-|
-| [[Ubuntu-24] Clang version 19 will be added, and the default Clang will be set to 19 from 2025-05-09.](https://github.com/actions/runner-images/issues/11895) |
-| [[Ubuntu] Breaking change : Docker Engine Version 26.* will be updated to Docker Engine Version 28* from 2025-05-09](https://github.com/actions/runner-images/issues/11766) |
-***
 # Ubuntu 20.04
 - OS Version: 20.04.6 LTS
 - Kernel Version: 5.15.0-1086-azure
-- Image Version: 20250406.1.0
+- Image Version: 20250406.1.1
 - Systemd version: 245.4-4ubuntu3.24
 
 ## Installed Software
@@ -34,7 +29,7 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.17.2
-- Homebrew 4.4.27
+- Homebrew 4.4.28
 - Miniconda 25.1.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
@@ -75,7 +70,7 @@ to accomplish this.
 - Bicep 0.34.44
 - Buildah 1.22.3
 - CMake 3.31.6
-- CodeQL Action Bundle 2.20.7
+- CodeQL Action Bundle 2.21.0
 - Docker Amazon ECR Credential Helper 0.9.1
 - Docker Compose v2 2.27.1
 - Docker-Buildx 0.22.0
@@ -397,4 +392,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.4-1ubuntu1.1                  |
 | zip                    | 3.0-11build1                      |
 | zsync                  | 0.6.2-3ubuntu1                    |
-
