@@ -1,7 +1,7 @@
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
 - Kernel Version: 6.5.0-1025-azure
-- Image Version: 20250126.1.0
+- Image Version: 20250105.1.1
 - Systemd version: 249.11-0ubuntu3.12
 
 ## Installed Software
@@ -26,8 +26,8 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.17.0
-- Homebrew 4.4.17
+- Helm 3.16.4
+- Homebrew 4.4.15
 - Miniconda 24.11.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
@@ -35,7 +35,7 @@
 - Pip3 22.0.2
 - Pipx 1.7.1
 - RubyGems 3.3.5
-- Vcpkg (build from commit 57c08a322)
+- Vcpkg (build from commit 1420fe276)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -54,9 +54,9 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.12
-- Gradle 8.12.1
+- Gradle 8.12
 - Lerna 8.1.9
-- Maven 3.9.9
+- Maven 3.8.8
 - Sbt 1.10.7
 
 ### Tools
@@ -67,11 +67,11 @@ to accomplish this.
 - Bazelisk 1.25.0
 - Bicep 0.33.13
 - Buildah 1.23.1
-- CMake 3.31.5
-- CodeQL Action Bundle 2.20.1
+- CMake 3.31.3
+- CodeQL Action Bundle 2.20.0
 - Docker Amazon ECR Credential Helper 0.9.0
 - Docker Compose v2 2.27.1
-- Docker-Buildx 0.20.1
+- Docker-Buildx 0.19.3
 - Docker Client 26.1.3
 - Docker Server 26.1.3
 - Fastlane 2.226.0
@@ -79,11 +79,11 @@ to accomplish this.
 - Git LFS 3.6.1
 - Git-ftp 1.6.0
 - Haveged 1.9.14
-- Heroku 10.0.2
+- Heroku 10.0.1
 - jq 1.6
 - Kind 0.26.0
-- Kubectl 1.32.1
-- Kustomize 5.6.0
+- Kubectl 1.32.0
+- Kustomize 5.5.0
 - Leiningen 2.11.2
 - MediaInfo 21.09
 - Mercurial 6.1.1
@@ -92,32 +92,32 @@ to accomplish this.
 - Newman 6.2.1
 - nvm 0.40.1
 - OpenSSL 3.0.2-0ubuntu1.18
-- Packer 1.12.0
+- Packer 1.11.2
 - Parcel 2.13.3
 - Podman 3.4.4
-- Pulumi 3.147.0
+- Pulumi 3.145.0
 - R 4.4.2
 - Skopeo 1.4.1
 - Sphinx Open Source Search Server 2.2.11
 - SVN 1.14.1
-- Terraform 1.10.5
+- Terraform 1.10.4
 - yamllint 1.35.1
 - yq 4.45.1
 - zstd 1.5.6
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.0.250
-- AWS CLI 2.23.6
+- Alibaba Cloud CLI 3.0.246
+- AWS CLI 2.22.31
 - AWS CLI Session Manager Plugin 1.2.694.0
 - AWS SAM CLI 1.132.0
 - Azure CLI 2.68.0
 - Azure CLI (azure-devops) 1.0.1
 - GitHub CLI 2.65.0
-- Google Cloud CLI 507.0.0
-- Netlify CLI 18.0.2
-- OpenShift CLI 4.17.12
+- Google Cloud CLI 505.0.0
+- Netlify CLI 18.0.0
+- OpenShift CLI 4.17.11
 - ORAS CLI 1.2.2
-- Vercel CLI 39.3.0
+- Vercel CLI 39.2.6
 
 ### Java
 | Version             | Environment Variable |
@@ -149,20 +149,20 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 
 #### Packages
 - Bindgen 0.71.1
-- Cargo audit 0.21.1
+- Cargo audit 0.21.0
 - Cargo clippy 0.1.84
 - Cargo outdated 0.16.0
 - Cbindgen 0.28.0
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 132.0.6834.110
-- ChromeDriver 132.0.6834.110
-- Chromium 132.0.6834.0
-- Microsoft Edge 132.0.2957.127
-- Microsoft Edge WebDriver 132.0.2957.127
-- Selenium server 4.28.1
-- Mozilla Firefox 134.0.2
+- Google Chrome 131.0.6778.264
+- ChromeDriver 131.0.6778.264
+- Chromium 131.0.6778.0
+- Microsoft Edge 131.0.2903.112
+- Microsoft Edge WebDriver 131.0.2903.112
+- Selenium server 4.27.0
+- Mozilla Firefox 134.0
 - Geckodriver 0.35.0
 
 #### Environment variables
@@ -252,7 +252,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | Package Name               | Version                                                                                                                                                                                                                                                                                                     |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Android Command Line Tools | 9.0                                                                                                                                                                                                                                                                                                         |
-| Android SDK Build-tools    | 35.0.0 35.0.1<br>34.0.0<br>33.0.0 33.0.1 33.0.2 33.0.3<br>32.0.0<br>31.0.0                                                                                                                                                                                                                                  |
+| Android SDK Build-tools    | 35.0.0<br>34.0.0<br>33.0.0 33.0.1 33.0.2 33.0.3<br>32.0.0<br>31.0.0                                                                                                                                                                                                                                         |
 | Android SDK Platforms      | android-35-ext14 (rev 1)<br>android-35 (rev 2)<br>android-34-ext8 (rev 1)<br>android-34-ext12 (rev 1)<br>android-34-ext11 (rev 1)<br>android-34-ext10 (rev 1)<br>android-34 (rev 3)<br>android-33-ext5 (rev 1)<br>android-33-ext4 (rev 1)<br>android-33 (rev 3)<br>android-32 (rev 1)<br>android-31 (rev 1) |
 | Android Support Repository | 47.0.0                                                                                                                                                                                                                                                                                                      |
 | CMake                      | 3.10.2<br>3.18.1<br>3.22.1                                                                                                                                                                                                                                                                                  |
@@ -278,14 +278,14 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | alpine:3.18          | sha256:dd60c75fba961ecc5e918961c713f3c42dd5665171c58f9b2ef5aafe081ad5a0  | 2025-01-08 |
 | alpine:3.19          | sha256:6380aa6b04faa579332d4c9d1f65bd7093012ba6e01d9bbcd5e2d8a4f9fae38f  | 2025-01-08 |
 | debian:10            | sha256:58ce6f1271ae1c8a2006ff7d3e54e9874d839f573d8009c20154ad0f2fb0a225  | 2024-06-13 |
-| debian:11            | sha256:e5bfb7364038fd100c2faebdd674145bd1bc758a57f3c67023cced99d0eff0f7  | 2025-01-13 |
-| moby/buildkit:latest | sha256:14aa1b4dd92ea0a4cd03a54d0c6079046ea98cd0c0ae6176bdd7036ba370cbbe  | 2025-01-20 |
-| node:18              | sha256:720eeea325b3da50e108ba34dde0fd69feeb3c59485199c5e22b0ea49a792aa5  | 2025-01-22 |
-| node:18-alpine       | sha256:974afb6cbc0314dc6502b14243b8a39fbb2d04d975e9059dd066be3e274fbb25  | 2025-01-22 |
-| node:20              | sha256:bc3d86568d9a9e062cdf7036367f6e2ce201925e2912758bcd3b0e2657875a63  | 2025-01-22 |
-| node:20-alpine       | sha256:2cd2a6f4cb37cf8a007d5f1e9aef090ade6b62974c7a274098c390599e8c72b4  | 2025-01-22 |
-| node:22              | sha256:ae2f3d4cc65d251352eca01ba668824f651a2ee4d2a37e2efb22649521a483fd  | 2025-01-22 |
-| node:22-alpine       | sha256:e2b39f7b64281324929257d0f8004fb6cb4bf0fdfb9aa8cedb235a766aec31da  | 2025-01-22 |
+| debian:11            | sha256:21b74d95871e8676a0cf47df9caebb1021b2af60b9a6e4777ce92f92f98e3a90  | 2024-12-23 |
+| moby/buildkit:latest | sha256:86c0ad9d1137c186e9d455912167df20e530bdf7f7c19de802e892bb8ca16552  | 2024-12-16 |
+| node:18              | sha256:7f31a1eb14c61719b8bb0eaa029310cc33851f71d3578cc422b390f8096977c5  | 2024-11-15 |
+| node:18-alpine       | sha256:a24108da7089c2d293ceaa61fb8969ec10821e8efe25572e5abb10b1841eb70b  | 2024-12-05 |
+| node:20              | sha256:d17aaa2a2fd82e09bd6a6da7cc4a79741340d2a3e39d172d1b30f295b1a850ff  | 2024-11-20 |
+| node:20-alpine       | sha256:24fb6aa7020d9a20b00d6da6d1714187c45ed00d1eb4adb01395843c338b9372  | 2024-12-05 |
+| node:22              | sha256:99981c3d1aac0d98cd9f03f74b92dddf30f30ffb0b34e6df8bd96283f62f12c6  | 2025-01-07 |
+| node:22-alpine       | sha256:f2dc6eea95f787e25f173ba9904c9d0647ab2506178c7b5b7c5a3d02bc4af145  | 2025-01-07 |
 | ubuntu:20.04         | sha256:8e5c4f0285ecbb4ead070431d29b576a530d3166df73ec44affc1cd27555141b  | 2024-10-11 |
 | ubuntu:22.04         | sha256:0e5e4a57c2499249aafc3b40fcd541e9a456aab7296681a3994d631587203f97  | 2024-09-11 |
 

@@ -1,7 +1,7 @@
 # Ubuntu 24.04
 - OS Version: 24.04.1 LTS
-- Kernel Version: 6.8.0-1020-azure
-- Image Version: 20250126.1.0
+- Kernel Version: 6.8.0-1017-azure
+- Image Version: 20250105.1.1
 - Systemd version: 255.4-1ubuntu8.4
 
 ## Installed Software
@@ -24,15 +24,15 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.17.0
-- Homebrew 4.4.17
+- Helm 3.16.4
+- Homebrew 4.4.15
 - Miniconda 24.11.1
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
 - Pipx 1.7.1
 - RubyGems 3.4.20
-- Vcpkg (build from commit 57c08a322)
+- Vcpkg (build from commit 1420fe276)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -51,7 +51,7 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.14
-- Gradle 8.12.1
+- Gradle 8.12
 - Lerna 8.1.9
 - Maven 3.9.9
 
@@ -62,11 +62,11 @@ to accomplish this.
 - Bazelisk 1.25.0
 - Bicep 0.33.13
 - Buildah 1.33.7
-- CMake 3.31.5
-- CodeQL Action Bundle 2.20.1
+- CMake 3.31.3
+- CodeQL Action Bundle 2.20.0
 - Docker Amazon ECR Credential Helper 0.9.0
 - Docker Compose v2 2.27.1
-- Docker-Buildx 0.20.1
+- Docker-Buildx 0.19.3
 - Docker Client 26.1.3
 - Docker Server 26.1.3
 - Fastlane 2.226.0
@@ -76,8 +76,8 @@ to accomplish this.
 - Haveged 1.9.14
 - jq 1.7
 - Kind 0.26.0
-- Kubectl 1.32.1
-- Kustomize 5.6.0
+- Kubectl 1.32.0
+- Kustomize 5.5.0
 - MediaInfo 24.01
 - Mercurial 6.7.2
 - Minikube 1.34.0
@@ -85,10 +85,10 @@ to accomplish this.
 - Newman 6.2.1
 - nvm 0.40.1
 - OpenSSL 3.0.13-0ubuntu3.4
-- Packer 1.12.0
+- Packer 1.11.2
 - Parcel 2.13.3
 - Podman 4.9.3
-- Pulumi 3.147.0
+- Pulumi 3.145.0
 - Skopeo 1.13.3
 - Sphinx Open Source Search Server 2.2.11
 - yamllint 1.35.1
@@ -96,13 +96,13 @@ to accomplish this.
 - zstd 1.5.6
 
 ### CLI Tools
-- AWS CLI 2.23.6
+- AWS CLI 2.22.31
 - AWS CLI Session Manager Plugin 1.2.694.0
 - AWS SAM CLI 1.132.0
 - Azure CLI 2.68.0
 - Azure CLI (azure-devops) 1.0.1
 - GitHub CLI 2.65.0
-- Google Cloud CLI 507.0.0
+- Google Cloud CLI 505.0.0
 
 ### Java
 | Version             | Environment Variable |
@@ -136,13 +136,13 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 132.0.6834.110
-- ChromeDriver 132.0.6834.110
-- Chromium 132.0.6834.0
-- Microsoft Edge 132.0.2957.127
-- Microsoft Edge WebDriver 132.0.2957.127
-- Selenium server 4.28.1
-- Mozilla Firefox 134.0.2
+- Google Chrome 131.0.6778.264
+- ChromeDriver 131.0.6778.264
+- Chromium 131.0.6778.0
+- Microsoft Edge 131.0.2903.112
+- Microsoft Edge WebDriver 131.0.2903.112
+- Selenium server 4.27.0
+- Mozilla Firefox 134.0
 - Geckodriver 0.35.0
 
 #### Environment variables
@@ -223,7 +223,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | Package Name               | Version                                                                                                                                                                                                                                   |
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Android Command Line Tools | 12.0                                                                                                                                                                                                                                      |
-| Android SDK Build-tools    | 35.0.0 35.0.1<br>34.0.0                                                                                                                                                                                                                   |
+| Android SDK Build-tools    | 35.0.0<br>34.0.0                                                                                                                                                                                                                          |
 | Android SDK Platforms      | android-35-ext14 (rev 1)<br>android-35 (rev 2)<br>android-34-ext8 (rev 1)<br>android-34-ext12 (rev 1)<br>android-34-ext11 (rev 1)<br>android-34-ext10 (rev 1)<br>android-34 (rev 3)<br>android-33-ext5 (rev 1)<br>android-33-ext4 (rev 1) |
 | Android Support Repository | 47.0.0                                                                                                                                                                                                                                    |
 | Google Play services       | 49                                                                                                                                                                                                                                        |
