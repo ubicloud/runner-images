@@ -1,12 +1,7 @@
-| Announcements |
-|-|
-| [[Windows, Ubuntu] Python 3.8.x will be removed from 2025-06-06](https://github.com/actions/runner-images/issues/12034) |
-| [[Ubuntu] Breaking change : Docker Engine Version 26.* will be updated to Docker Engine Version 28* from 2025-05-09](https://github.com/actions/runner-images/issues/11766) |
-***
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
-- Kernel Version: 6.8.0-1026-azure
-- Image Version: 20250421.2.0
+- Kernel Version: 6.8.0-1025-azure
+- Image Version: 20250406.1.1
 - Systemd version: 249.11-0ubuntu3.15
 
 ## Installed Software
@@ -31,8 +26,8 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.17.3
-- Homebrew 4.4.31
+- Helm 3.17.2
+- Homebrew 4.4.28
 - Miniconda 25.1.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
@@ -390,4 +385,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.5-2ubuntu1                      |
 | zip                    | 3.0-12build2                        |
 | zsync                  | 0.6.2-3ubuntu1                      |
-
