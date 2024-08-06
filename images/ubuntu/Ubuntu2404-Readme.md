@@ -1,13 +1,7 @@
-| Announcements |
-|-|
-| [[Windows & Ubuntu] Breaking change : Maven 3.8.* version will be updated to  Maven 3.9.*  from January 10,2025](https://github.com/actions/runner-images/issues/11093) |
-| [[Ubuntu] Breaking Change: runner user will have UID 1001 instead of 1000 for larger runners](https://github.com/actions/runner-images/issues/10936) |
-| [Ubuntu-latest workflows will use Ubuntu-24.04 image](https://github.com/actions/runner-images/issues/10636) |
-***
 # Ubuntu 24.04
 - OS Version: 24.04.1 LTS
 - Kernel Version: 6.8.0-1017-azure
-- Image Version: 20241215.1.0
+- Image Version: 20241124.1.1
 - Systemd version: 255.4-1ubuntu8.4
 
 ## Installed Software
@@ -18,9 +12,9 @@
 - Clang-format: 16.0.6, 17.0.6, 18.1.3
 - Clang-tidy: 16.0.6, 17.0.6, 18.1.3
 - Dash 0.5.12-6ubuntu5
-- GNU C++: 12.3.0, 13.3.0, 14.2.0
-- GNU Fortran: 12.3.0, 13.3.0, 14.2.0
-- Julia 1.11.2
+- GNU C++: 12.3.0, 13.2.0, 14.2.0
+- GNU Fortran: 12.3.0, 13.2.0, 14.2.0
+- Julia 1.11.1
 - Kotlin 2.1.0-release-394
 - Node.js 20.18.1
 - Perl 5.38.2
@@ -31,14 +25,14 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.16.3
-- Homebrew 4.4.11
+- Homebrew 4.4.8
 - Miniconda 24.9.2
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
 - Pipx 1.7.1
 - RubyGems 3.4.20
-- Vcpkg (build from commit b545373a9)
+- Vcpkg (build from commit 9d196b217)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -64,18 +58,18 @@ to accomplish this.
 ### Tools
 - Ansible 2.18.1
 - AzCopy 10.27.1 - available by `azcopy` and `azcopy10` aliases
-- Bazel 8.0.0
-- Bazelisk 1.25.0
-- Bicep 0.32.4
+- Bazel 7.4.1
+- Bazelisk 1.24.1
+- Bicep 0.31.92
 - Buildah 1.33.7
 - CMake 3.31.2
 - CodeQL Action Bundle 2.20.0
 - Docker Amazon ECR Credential Helper 0.9.0
 - Docker Compose v2 2.27.1
-- Docker-Buildx 0.19.2
+- Docker-Buildx 0.19.1
 - Docker Client 26.1.3
 - Docker Server 26.1.3
-- Fastlane 2.226.0
+- Fastlane 2.225.0
 - Git 2.47.1
 - Git LFS 3.6.0
 - Git-ftp 1.6.0
@@ -94,7 +88,7 @@ to accomplish this.
 - Packer 1.11.2
 - Parcel 2.13.2
 - Podman 4.9.3
-- Pulumi 3.143.0
+- Pulumi 3.142.0
 - Skopeo 1.13.3
 - Sphinx Open Source Search Server 2.2.11
 - yamllint 1.35.1
@@ -102,13 +96,13 @@ to accomplish this.
 - zstd 1.5.6
 
 ### CLI Tools
-- AWS CLI 2.22.17
+- AWS CLI 2.22.7
 - AWS CLI Session Manager Plugin 1.2.694.0
 - AWS SAM CLI 1.132.0
 - Azure CLI 2.67.0
 - Azure CLI (azure-devops) 1.0.1
-- GitHub CLI 2.63.2
-- Google Cloud CLI 503.0.0
+- GitHub CLI 2.63.0
+- Google Cloud CLI 502.0.0
 
 ### Java
 | Version              | Environment Variable |
@@ -145,8 +139,8 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Google Chrome 131.0.6778.139
 - ChromeDriver 131.0.6778.108
 - Chromium 131.0.6778.0
-- Microsoft Edge 131.0.2903.99
-- Microsoft Edge WebDriver 131.0.2903.87
+- Microsoft Edge 131.0.2903.70
+- Microsoft Edge WebDriver 131.0.2903.52
 - Selenium server 4.27.0
 - Mozilla Firefox 133.0
 - Geckodriver 0.35.0
@@ -315,4 +309,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1build0.1 |
 | zip                    | 3.0-13ubuntu0.1             |
 | zsync                  | 0.6.2-5build1               |
-
