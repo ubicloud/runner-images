@@ -208,7 +208,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 
 #### Ruby
 - 3.2.8
-- 3.3.8
+- 3.3.7
 
 ### PowerShell Tools
 - PowerShell 7.4.10
@@ -255,7 +255,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | aria2                  | 1.37.0+debian-1build3        |
 | autoconf               | 2.71-3                       |
 | automake               | 1:1.16.5-1.3ubuntu1          |
-| binutils               | 2.42-4ubuntu2.5              |
+| binutils               | 2.42-4ubuntu2.4              |
 | bison                  | 2:3.8.2+dfsg-1build2         |
 | brotli                 | 1.1.0-2build2                |
 | bzip2                  | 1.0.8-5.1build0.1            |
@@ -323,4 +323,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1ubuntu0.2 |
 | zip                    | 3.0-13ubuntu0.2              |
 | zsync                  | 0.6.2-5build1                |
-
