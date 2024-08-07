@@ -12,7 +12,9 @@ on:
         type: choice
         options:
           - ubuntu-20.04
+          - ubuntu-20.04.arm64
           - ubuntu-22.04
+          - ubuntu-22.04.arm64
           - ubuntu-24.04
           - ubuntu-minimal
       image_suffix:
@@ -52,7 +54,9 @@ jobs:
           $ReadmeName = switch ( $ImageType )
           {
               "ubuntu-20.04" { 'Ubuntu2004-Readme.md' }
+              "ubuntu-20.04.arm64" { 'Ubuntu2004-Readme.md' }
               "ubuntu-22.04" { 'Ubuntu2204-Readme.md' }
+              "ubuntu-22.04.arm64" { 'Ubuntu2204-arm64-Readme.md' }
               "ubuntu-24.04" { 'Ubuntu2404-Readme.md' }
               "ubuntu-minimal" { 'Ubuntu2204-Readme.md' }
           }
