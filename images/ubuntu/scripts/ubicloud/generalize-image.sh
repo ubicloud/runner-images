@@ -56,6 +56,12 @@ rm /etc/ssh/ssh_host_*key*
 # Delete the root password
 passwd -d root
 
+# Rebuild apt lists from scratch
+if is_ubuntu22; then
+    rm -vf /var/lib/apt/lists/* || true
+    apt-get update
+fi
+
 sync
 
 # Delete the packer account
