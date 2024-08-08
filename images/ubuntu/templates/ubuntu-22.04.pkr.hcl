@@ -544,6 +544,12 @@ EOF
     inline          = ["passwd -d root"]
   }
 
+  // Rebuild apt lists from scratch
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["rm -vf /var/lib/apt/lists/* || true", "apt-get update"]
+  }
+
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     inline          = ["sync"]
