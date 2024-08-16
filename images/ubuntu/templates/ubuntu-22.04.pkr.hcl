@@ -428,6 +428,11 @@ build {
     inline          = ["sleep 30"]
   }
 
+  provisioner "file" {
+    destination = "/tmp/"
+    source      = "${path.root}/../assets/run-withenv.sh"
+  }
+
   provisioner "shell" {
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = ["${path.root}/../scripts/ubicloud/setup-runner-user.sh"]

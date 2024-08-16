@@ -42,11 +42,7 @@ chown -R packer:packer actions-runner
 # runner environment at the end of this script, it's otherwise ignored, and
 # this omission has caused problems.
 # See https://github.com/actions/runner/issues/1703
-cat <<EOT > ./actions-runner/run-withenv.sh
-#!/bin/bash
-mapfile -t env </etc/environment
-exec env -- "\${env[@]}" ./actions-runner/run.sh --jitconfig "\$1"
-EOT
+mv /tmp/run-withenv.sh ./actions-runner/run-withenv.sh
 chmod +x ./actions-runner/run-withenv.sh
 
 # runner script doesn't use global $PATH variable by default. It gets path from
