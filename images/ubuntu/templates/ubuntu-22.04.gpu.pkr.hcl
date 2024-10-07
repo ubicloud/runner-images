@@ -370,7 +370,6 @@ build {
       "${path.root}/../scripts/ubicloud/nvidia-container-toolkit.sh",
       "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
       "${path.root}/../scripts/ubicloud/install-packages.sh",
-      "${path.root}/../scripts/ubicloud/setup-systemd-resolved.sh",
       "${path.root}/../scripts/ubicloud/generalize-image.sh"
     ]
   }
