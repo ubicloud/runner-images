@@ -448,8 +448,12 @@ build {
   }
 
   provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts          = ["${path.root}/../scripts/ubicloud/setup-runner-user.sh"]
+    scripts = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/install-cache-proxy.sh"
+    ]
   }
 
   // Install nftables and enable it because it's not installed by default in Ubuntu 20.04
