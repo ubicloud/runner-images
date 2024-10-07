@@ -37,9 +37,9 @@ source /etc/environment
 
 # Download actions/runner script
 if is_x64; then
-  download_url=$(resolve_github_release_asset_url "actions/runner" 'test("actions-runner-linux-x64-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
+  download_url=$(resolve_github_release_asset_url "ubicloud/runner" 'test("actions-runner-linux-x64-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
 elif is_arm64; then
-  download_url=$(resolve_github_release_asset_url "actions/runner" 'test("actions-runner-linux-arm64-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
+  download_url=$(resolve_github_release_asset_url "ubicloud/runner" 'test("actions-runner-linux-arm64-[0-9]+\\.[0-9]{3}\\.[0-9]+\\.tar\\.gz$")' "latest")
 else
   echo "Unsupported architecture"
   exit 1
