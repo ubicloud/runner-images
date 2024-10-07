@@ -440,6 +440,12 @@ build {
     scripts          = ["${path.root}/../scripts/ubicloud/setup-runner-user.sh"]
   }
 
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "DEBIAN_FRONTEND=noninteractive"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/ubicloud/install-cache-proxy.sh"]
+  }
+
   // Update OpenSSH (https://ubuntu.com/security/CVE-2024-6387)
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
