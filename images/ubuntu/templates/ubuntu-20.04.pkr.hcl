@@ -384,29 +384,29 @@ build {
     start_retry_timeout = "10m"
   }
 
-  provisioner "shell" {
-    environment_vars    = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
-    inline              = [
-      "pwsh -Command Write-Host Running Generate-SoftwareReport.ps1 script",
-      "pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}",
-      "pwsh -Command Write-Host Running RunAll-Tests.ps1 script",
-      "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"
-    ]
-    max_retries         = "3"
-    start_retry_timeout = "2m"
-  }
+//  provisioner "shell" {
+//    environment_vars    = ["IMAGE_VERSION=${var.image_version}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}"]
+//    inline              = [
+//      "pwsh -Command Write-Host Running Generate-SoftwareReport.ps1 script",
+//      "pwsh -File ${var.image_folder}/SoftwareReport/Generate-SoftwareReport.ps1 -OutputDirectory ${var.image_folder}",
+//      "pwsh -Command Write-Host Running RunAll-Tests.ps1 script",
+//      "pwsh -File ${var.image_folder}/tests/RunAll-Tests.ps1 -OutputDirectory ${var.image_folder}"
+//    ]
+//    max_retries         = "3"
+//    start_retry_timeout = "2m"
+//  }
 
-  provisioner "file" {
-    destination = "${path.root}/../Ubuntu2004-Readme.md"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.md"
-  }
+//  provisioner "file" {
+//    destination = "${path.root}/../Ubuntu2004-Readme.md"
+//    direction   = "download"
+//    source      = "${var.image_folder}/software-report.md"
+//  }
 
-  provisioner "file" {
-    destination = "${path.root}/../software-report.json"
-    direction   = "download"
-    source      = "${var.image_folder}/software-report.json"
-  }
+//  provisioner "file" {
+//    destination = "${path.root}/../software-report.json"
+//    direction   = "download"
+//    source      = "${var.image_folder}/software-report.json"
+//  }
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPT_FOLDER=${var.helper_script_folder}", "INSTALLER_SCRIPT_FOLDER=${var.installer_script_folder}", "IMAGE_FOLDER=${var.image_folder}"]

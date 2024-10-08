@@ -214,11 +214,11 @@ $phpTools.AddToolVersion("PHPUnit", $(Get-PHPUnitVersion))
 $phpTools.AddNote("Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.")
 
 # Haskell Tools
-$haskellTools = $installedSoftware.AddHeader("Haskell Tools")
-$haskellTools.AddToolVersion("Cabal", $(Get-CabalVersion))
-$haskellTools.AddToolVersion("GHC", $(Get-GHCVersion))
-$haskellTools.AddToolVersion("GHCup", $(Get-GHCupVersion))
-$haskellTools.AddToolVersion("Stack", $(Get-StackVersion))
+# $haskellTools = $installedSoftware.AddHeader("Haskell Tools")
+# $haskellTools.AddToolVersion("Cabal", $(Get-CabalVersion))
+# $haskellTools.AddToolVersion("GHC", $(Get-GHCVersion))
+# $haskellTools.AddToolVersion("GHCup", $(Get-GHCupVersion))
+# $haskellTools.AddToolVersion("Stack", $(Get-StackVersion))
 
 # Rust Tools
 Initialize-RustEnvironment
