@@ -75,86 +75,86 @@ jobs:
           "TemplateDirectoryPath=$TemplateDirectoryPath" >> $env:GITHUB_ENV
           "TemplatePath=$TemplatePath" >> $env:GITHUB_ENV
 
-      - name: Build VM
-        shell: pwsh
-        run: |
-          ./images.CI/linux-and-win/build-image.ps1 `
-            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
-            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
-            -TemplatePath "$env:TemplatePath" `
-            -ImageName "${{ env.MANAGED_IMAGE_NAME }}" `
-            -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
-            -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
-            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
-            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
-            -Location "${{ env.AZURE_LOCATION }}" `
-            -ImageVersion "${{ inputs.image_version }}"
-        env:
-          PACKER_LOG: 1
-          PACKER_LOG_PATH: "/tmp/packer-log.txt"
+      # - name: Build VM
+      #   shell: pwsh
+      #   run: |
+      #     ./images.CI/linux-and-win/build-image.ps1 `
+      #       -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+      #       -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+      #       -TemplatePath "$env:TemplatePath" `
+      #       -ImageName "${{ env.MANAGED_IMAGE_NAME }}" `
+      #       -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+      #       -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
+      #       -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+      #       -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+      #       -Location "${{ env.AZURE_LOCATION }}" `
+      #       -ImageVersion "${{ inputs.image_version }}"
+      #   env:
+      #     PACKER_LOG: 1
+      #     PACKER_LOG_PATH: "/tmp/packer-log.txt"
 
-      - name: Convert managed image to VHD
-        shell: pwsh
-        timeout-minutes: 120
-        run: |
-          ./images.CI/linux-and-win/convert-to-vhd.ps1 `
-            -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
-            -Location "${{ env.AZURE_LOCATION }}" `
-            -ResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
-            -ManagedImageName "${{ env.MANAGED_IMAGE_NAME }}" `
-            -GalleryName "GitHubRunnerImages" `
-            -GalleryImageSku "${{ matrix.image_type }}" `
-            -GalleryImageVersion "${{ inputs.image_version }}" `
-            -StorageAccountName "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
-            -StorageAccountContainerName "images" `
-            -VhdName "${{ env.MANAGED_IMAGE_NAME }}.vhd" `
-            -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
-            -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
-            -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
-            -RemoveManagedImage
+      # - name: Convert managed image to VHD
+      #   shell: pwsh
+      #   timeout-minutes: 120
+      #   run: |
+      #     ./images.CI/linux-and-win/convert-to-vhd.ps1 `
+      #       -SubscriptionId "${{ secrets.AZURE_SUBSCRIPTION_ID }}" `
+      #       -Location "${{ env.AZURE_LOCATION }}" `
+      #       -ResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
+      #       -ManagedImageName "${{ env.MANAGED_IMAGE_NAME }}" `
+      #       -GalleryName "GitHubRunnerImages" `
+      #       -GalleryImageSku "${{ matrix.image_type }}" `
+      #       -GalleryImageVersion "${{ inputs.image_version }}" `
+      #       -StorageAccountName "${{ secrets.AZURE_STORAGE_ACCOUNT }}" `
+      #       -StorageAccountContainerName "images" `
+      #       -VhdName "${{ env.MANAGED_IMAGE_NAME }}.vhd" `
+      #       -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
+      #       -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
+      #       -TenantId "${{ secrets.AZURE_TENANT_ID }}" `
+      #       -RemoveManagedImage
 
-      - name: Copy image artifacts to the separate directory
-        shell: pwsh
-        run: |
-          $ImageType = "${{ matrix.image_type }}"
-          $rootDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu" } else { "windows" }
-          $rootDirectoryPath = Join-Path "images" $rootDirectoryName | Resolve-Path
+      # - name: Copy image artifacts to the separate directory
+      #   shell: pwsh
+      #   run: |
+      #     $ImageType = "${{ matrix.image_type }}"
+      #     $rootDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu" } else { "windows" }
+      #     $rootDirectoryPath = Join-Path "images" $rootDirectoryName | Resolve-Path
 
-          $readmePath = Join-Path $rootDirectoryPath "${{ matrix.readme }}"
-          $softwareReportPath = Join-Path $rootDirectoryPath "software-report.json"
+      #     $readmePath = Join-Path $rootDirectoryPath "${{ matrix.readme }}"
+      #     $softwareReportPath = Join-Path $rootDirectoryPath "software-report.json"
 
-          New-Item artifact -ItemType Directory
-          Copy-Item -Path $readmePath -Destination "artifact/"
-          if (Test-Path $softwareReportPath) {
-              Copy-Item -Path $softwareReportPath -Destination "artifact/"
-          }
+      #     New-Item artifact -ItemType Directory
+      #     Copy-Item -Path $readmePath -Destination "artifact/"
+      #     if (Test-Path $softwareReportPath) {
+      #         Copy-Item -Path $softwareReportPath -Destination "artifact/"
+      #     }
 
-      - name: Print markdown software report
-        shell: pwsh
-        run: |
-          Get-Content -Path "artifact/${{ matrix.readme }}"
+      # - name: Print markdown software report
+      #   shell: pwsh
+      #   run: |
+      #     Get-Content -Path "artifact/${{ matrix.readme }}"
 
-      - name: Print json software report
-        shell: pwsh
-        run: |
-          $softwareReportPath = "artifact/software-report.json"
-          if (Test-Path $softwareReportPath) {
-              Get-Content -Path $softwareReportPath
-          }
+      # - name: Print json software report
+      #   shell: pwsh
+      #   run: |
+      #     $softwareReportPath = "artifact/software-report.json"
+      #     if (Test-Path $softwareReportPath) {
+      #         Get-Content -Path $softwareReportPath
+      #     }
 
-      - name: Publish Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: "${{ env.MANAGED_IMAGE_NAME }}-artifact"
-          path: artifact/*
+      # - name: Publish Artifacts
+      #   uses: actions/upload-artifact@v4
+      #   with:
+      #     name: "${{ env.MANAGED_IMAGE_NAME }}-artifact"
+      #     path: artifact/*
 
-      - name: Print provisioners duration
-        shell: pwsh
-        run: |
-          ./images.CI/measure-provisioners-duration.ps1 `
-            -PackerLogPath "/tmp/packer-log.txt" `
-            -PrefixToPathTrim "$env:TemplateDirectoryPath" `
-            -PrintTopNLongest 25
+      # - name: Print provisioners duration
+      #   shell: pwsh
+      #   run: |
+      #     ./images.CI/measure-provisioners-duration.ps1 `
+      #       -PackerLogPath "/tmp/packer-log.txt" `
+      #       -PrefixToPathTrim "$env:TemplateDirectoryPath" `
+      #       -PrintTopNLongest 25
 
       - name: Clean up resources
         if: always()
