@@ -30,7 +30,11 @@ install_open_jdk() {
     local java_version=$1
 
     # Install Java from PPA repositories.
-    apt-get -y install temurin-${java_version}-jdk=\*
+    while ! apt-get -y install temurin-${java_version}-jdk=\*; do
+        echo "Installation of temurin-${java_version}-jdk failed. Retrying in 5 seconds..."
+        sleep 5
+    done
+
     java_version_path="/usr/lib/jvm/temurin-${java_version}-jdk-$(get_arch "amd64" "arm64")"
 
     java_toolcache_path="${AGENT_TOOLSDIRECTORY}/Java_Temurin-Hotspot_jdk"
