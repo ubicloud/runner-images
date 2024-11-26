@@ -49,6 +49,20 @@ exec env -- "\${env[@]}" ./actions-runner/run.sh --jitconfig "\$1"
 EOT
 chmod +x ./actions-runner/run-withenv.sh
 
+# GitHub environment variables are only available in the workflow, not for unix
+# user. We need some of these variables to run some features such as Ubicloud
+# Cache. Runner script allows to run a hook script before the job starts and
+# this hook has access to the environment variables. So we just persist them
+# to a file and read them in the Ubicloud Cache proxy.
+# See https://docs.github.com/en/actions/hosting-your-own-runners/managing-self-hosted-runners/running-scripts-before-or-after-a-job#triggering-the-scripts
+cat <<EOT > ./actions-runner/start-hook.sh
+#!/bin/sh
+printenv | grep GITHUB | sudo tee /etc/.github_context >/dev/null || true
+EOT
+chmod +x ./actions-runner/start-hook.sh
+
+echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/runner/actions-runner/start-hook.sh" | sudo tee -a /etc/environment
+
 # runner script doesn't use global $PATH variable by default. It gets path from
 # secure_path at /etc/sudoers. Also script load .env file, so we are able to
 # overwrite default path value of runner script with $PATH.
