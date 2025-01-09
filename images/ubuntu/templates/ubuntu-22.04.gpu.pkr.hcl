@@ -360,6 +360,7 @@ build {
       "${path.root}/../scripts/ubicloud/nvidia-driver.sh",
       "${path.root}/../scripts/ubicloud/nvidia-container-toolkit.sh",
       "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/configure-docker.sh",
       "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
       "${path.root}/../scripts/ubicloud/install-packages.sh",
       "${path.root}/../scripts/ubicloud/generalize-image.sh"

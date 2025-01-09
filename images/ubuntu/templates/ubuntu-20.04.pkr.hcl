@@ -436,6 +436,7 @@ build {
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts = [
       "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/configure-docker.sh",
       "${path.root}/../scripts/ubicloud/install-cache-proxy.sh"
     ]
   }
