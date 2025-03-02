@@ -97,7 +97,7 @@ $sourceDiskUri = az disk grant-access `
   --name $ManagedImageName `
   --duration-in-seconds 86400 `
   --access-level Read `
-  --query [accessSas] -o tsv
+  --query [accessSAS] -o tsv
 
 Write-Host "Querying key for the storage account '$StorageAccountName'..."
 $targetKey = az storage account keys list `
