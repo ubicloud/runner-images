@@ -533,15 +533,14 @@ EOF
     inline          = ["rm -vf /var/lib/apt/lists/* || true", "apt-get update"]
   }
 
-  provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sync"]
-  }
-
   // Delete the packer account
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     inline          = ["touch /var/run/utmp", "userdel -f -r packer"]
   }
 
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["sleep 30", "sync"]
+  }
 }
