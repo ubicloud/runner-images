@@ -215,11 +215,6 @@ jobs:
           sudo chmod +x /usr/bin/mc
           mc --version
 
-      - name: Install qemu tools
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y qemu-utils
-
       - name: Set MinIO root certificates
         run: |
           mkdir -p ~/.mc/certs/CAs
@@ -247,8 +242,17 @@ jobs:
 
           azcopy copy "$sas_token" "${{ env.MANAGED_IMAGE_NAME }}.vhd"
 
+      - name: Install vhdiinfo tool
+        run: |
+          sudo apt-get update
+          sudo apt install -y libvhdi-utils
+
       - name: Convert VHD to RAW
-        run: qemu-img convert -f vpc -O raw ${{ env.MANAGED_IMAGE_NAME }}.vhd ${{ env.MANAGED_IMAGE_NAME }}.raw
+        run: |
+          VHD_IMAGE_SIZE=$(vhdiinfo -v "${{ env.MANAGED_IMAGE_NAME }}.vhd" | grep "Media size" | sed -n 's/.*(\([0-9]\+\) bytes).*/\1/p')
+          BLOCK_SIZE=512
+          BLOCK_COUNT=$(( VHD_IMAGE_SIZE / BLOCK_SIZE ))
+          dd if="${{ env.MANAGED_IMAGE_NAME }}.vhd" of="${{ env.MANAGED_IMAGE_NAME }}.raw" bs=$BLOCK_SIZE count=$BLOCK_COUNT
 
       - name: Create MinIO bucket
         run: mc mb --ignore-existing ubicloud/ubicloud-images
