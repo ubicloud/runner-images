@@ -11,6 +11,10 @@ sleep 30
 # It blocks booting the VM if it's not disabled
 systemctl disable hv-kvp-daemon.service
 
+# Remove Hyper-V line from chrony config file
+sed -i 's/^refclock PHC \/dev\/ptp_hyperv/# &/' /etc/chrony/chrony.conf
+systemctl restart chronyd
+
 # Delete the Azure Linux Agent
 apt -y purge walinuxagent
 rm -rf /var/lib/waagent
