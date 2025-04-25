@@ -1,3 +1,13 @@
+Describe "MongoDB" -Skip:(-not (Test-IsUbuntu20)) {
+    It "<ToolName>" -TestCases @(
+        @{ ToolName = "mongo" }
+        @{ ToolName = "mongod" }
+    ) {
+        $toolsetVersion = (Get-ToolsetContent).mongodb.version
+        (& $ToolName --version)[2].Split('"')[-2] | Should -BeLike "$toolsetVersion*"
+    }
+}
+
 Describe "PostgreSQL" {
     It "PostgreSQL Service" {
         "sudo systemctl start postgresql" | Should -ReturnZeroExitCode

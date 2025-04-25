@@ -54,6 +54,10 @@ function Get-CommandResult {
     }
 }
 
+function Test-IsUbuntu20 {
+    return (lsb_release -rs) -eq "20.04"
+}
+
 function Test-IsUbuntu22 {
     return (lsb_release -rs) -eq "22.04"
 }
