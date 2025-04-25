@@ -296,6 +296,12 @@ build {
     inline          = ["systemctl disable hv-kvp-daemon.service"]
   }
 
+  // Remove Hyper-V line from chrony config file
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["sed -i 's|^refclock PHC /dev/ptp_hyperv|# &|' /etc/chrony/chrony.conf", "systemctl restart chronyd"]
+  }
+
   // Delete the Azure Linux Agent
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
