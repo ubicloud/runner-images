@@ -58,10 +58,22 @@ chmod +x ./actions-runner/run-withenv.sh
 cat <<EOT > ./actions-runner/start-hook.sh
 #!/bin/sh
 printenv | grep GITHUB | sudo tee /etc/.github_context >/dev/null || true
+if [[ -f /home/runner/actions-runner/.ubicloud_start_message ]]; then
+    cat /home/runner/actions-runner/.ubicloud_start_message
+fi
 EOT
 chmod +x ./actions-runner/start-hook.sh
 
-echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/runner/actions-runner/start-hook.sh" | sudo tee -a /etc/environment
+cat <<EOT > ./actions-runner/complete-hook.sh
+#!/bin/sh
+if [[ -f /home/runner/actions-runner/.ubicloud_complete_message ]]; then
+    cat /home/runner/actions-runner/.ubicloud_complete_message
+fi
+EOT
+chmod +x ./actions-runner/complete-hook.sh
+
+echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/runner/actions-runner/start-hook.sh
+ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/runner/actions-runner/complete-hook.sh" | sudo tee -a /etc/environment
 
 # runner script doesn't use global $PATH variable by default. It gets path from
 # secure_path at /etc/sudoers. Also script load .env file, so we are able to
