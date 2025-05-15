@@ -58,16 +58,16 @@ chmod +x ./actions-runner/run-withenv.sh
 cat <<EOT > ./actions-runner/start-hook.sh
 #!/bin/sh
 printenv | grep GITHUB | sudo tee /etc/.github_context >/dev/null || true
-if [[ -f ./actions-runner/.ubicloud_start_message ]]; then
-    cat ./actions-runner/.ubicloud_start_message
+if [[ -f /home/runner/actions-runner/.ubicloud_start_message ]]; then
+    cat /home/runner/actions-runner/.ubicloud_start_message
 fi
 EOT
 chmod +x ./actions-runner/start-hook.sh
 
 cat <<EOT > ./actions-runner/complete-hook.sh
 #!/bin/sh
-if [[ -f ./actions-runner/.ubicloud_complete_message ]]; then
-    cat ./actions-runner/.ubicloud_complete_message
+if [[ -f /home/runner/actions-runner/.ubicloud_complete_message ]]; then
+    cat /home/runner/actions-runner/.ubicloud_complete_message
 fi
 EOT
 chmod +x ./actions-runner/complete-hook.sh
