@@ -1,7 +1,3 @@
-locals {
-  managed_image_name = var.managed_image_name != "" ? var.managed_image_name : "packer-${var.image_os}-${var.image_version}"
-}
-
 variable "allowed_inbound_ip_addresses" {
   type    = list(string)
   default = []
@@ -14,7 +10,7 @@ variable "azure_tags" {
 
 variable "build_resource_group_name" {
   type    = string
-  default = "${env("BUILD_RESOURCE_GROUP_NAME")}"
+  default = "${env("BUILD_RG_NAME")}"
 }
 
 variable "client_cert_path" {
@@ -80,7 +76,7 @@ variable "install_password" {
 
 variable "location" {
   type    = string
-  default = "${env("ARM_RESOURCE_LOCATION")}"
+  default = ""
 }
 
 variable "managed_image_name" {
@@ -133,20 +129,75 @@ variable "vm_size" {
   default = "Standard_D4ps_v5"
 }
 
+variable "image_offer" {
+  type    = string
+  default = "0001-com-ubuntu-server-jammy"
+}
+
+variable "image_publisher" {
+  type    = string
+  default = "canonical"
+}
+
+variable "image_sku" {
+  type    = string
+  default = "22_04-lts-arm64"
+}
+
+variable "gallery_name" {
+  type    = string
+  default = "GitHubRunnerImages"
+}
+
+variable "gallery_resource_group_name" {
+  type    = string
+  default = "${env("GALLERY_RG_NAME")}"
+}
+
+variable "gallery_image_name" {
+  type    = string
+  default = "RunnerImage-ubuntu-22.04.arm64"
+}
+
+variable "gallery_image_version" {
+  type    = string
+  default = "${env("GALLERY_IMAGE_VERSION")}"
+}
+
+variable "gallery_storage_account_type" {
+  type    = string
+  default = "${env("GALLERY_STORAGE_ACCOUNT_TYPE")}"
+}
+
+variable "use_azure_cli_auth" {
+  type    = bool
+  default = false
+}
+
+variable "os_disk_size_gb" {
+  type    = number
+  default = 50
+}
+
+variable "image_os_type" {
+  type    = string
+  default = "Linux"
+}
+
 source "azure-arm" "build_image" {
   allowed_inbound_ip_addresses           = "${var.allowed_inbound_ip_addresses}"
   build_resource_group_name              = "${var.build_resource_group_name}"
   client_cert_path                       = "${var.client_cert_path}"
   client_id                              = "${var.client_id}"
   client_secret                          = "${var.client_secret}"
-  image_offer                            = "0001-com-ubuntu-server-jammy"
-  image_publisher                        = "canonical"
-  image_sku                              = "22_04-lts-arm64"
+  image_offer                            = "${var.image_offer}"
+  image_publisher                        = "${var.image_publisher}"
+  image_sku                              = "${var.image_sku}"
   location                               = "${var.location}"
-  // managed_image_name                     = "${local.managed_image_name}"
+  // managed_image_name                     = "${var.managed_image_name}"
   // managed_image_resource_group_name      = "${var.managed_image_resource_group_name}"
-  os_disk_size_gb                        = "50"
-  os_type                                = "Linux"
+  os_disk_size_gb                        = var.os_disk_size_gb
+  os_type                                = var.image_os_type
   private_virtual_network_with_public_ip = "${var.private_virtual_network_with_public_ip}"
   subscription_id                        = "${var.subscription_id}"
   temp_resource_group_name               = "${var.temp_resource_group_name}"
@@ -157,11 +208,12 @@ source "azure-arm" "build_image" {
   vm_size                                = "${var.vm_size}"
 
   shared_image_gallery_destination {
-      subscription = "${var.subscription_id}"
-      resource_group = "${var.managed_image_resource_group_name}"
-      gallery_name = "GitHubRunnerImages"
-      image_name = "RunnerImage-ubuntu-22.04.arm64"
-      image_version = "${var.image_version}"
+    subscription                         = var.subscription_id
+    gallery_name                         = var.gallery_name
+    resource_group                       = var.gallery_resource_group_name
+    image_name                           = var.gallery_image_name
+    image_version                        = var.gallery_image_version
+    storage_account_type                 = var.gallery_storage_account_type
   }
 
   dynamic "azure_tag" {
