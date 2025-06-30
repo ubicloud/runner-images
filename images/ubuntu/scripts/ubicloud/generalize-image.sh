@@ -35,9 +35,24 @@ datasource_list: [ NoCloud, ConfigDrive, OpenNebula, DigitalOcean, Azure, AltClo
 rm -rf /etc/default/grub.d/40-force-partuuid.cfg
 rm -rf /etc/default/grub.d/50-cloudimg-settings.cfg
 
+# Install AWS kernel and use it
+apt-get update
+# Try to install AWS kernel with same version, fallback to latest if not available
+if ! apt install -y "linux-image-$(uname -r | cut -d'-' -f1,2)-aws"; then
+    echo "Same version AWS kernel not available, installing latest AWS kernel"
+    apt install -y linux-image-aws
+fi
+
+# List installed kernels
+echo "List of installed kernels:"
+dpkg --list | grep linux-image
+
 # Replace 50-cloudimg-settings with default grub settings
 echo "# Cloud Image specific Grub settings for Generic Cloud Images
 # CLOUD_IMG: This file was created/modified by the Cloud Image build process
+
+# Use AWS kernel
+GRUB_DEFAULT=\"1>2\"
 
 # Set the recordfail timeout
 GRUB_RECORDFAIL_TIMEOUT=0
