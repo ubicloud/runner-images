@@ -7,9 +7,14 @@ addgroup --gid 1001 runner
 adduser --disabled-password --uid 1001 --gid 1001 --gecos '' runner
 echo 'runner ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/98-runner
 
+echo "[setup-runner-user.sh] Creating runner group and user..."
+
+
 # runner unix user needed access to manipulate the Docker daemon.
 # Default GitHub hosted runners have additional adm,systemd-journal groups.
 usermod -a -G docker,adm,systemd-journal runner
+
+echo "[setup-runner-user.sh] Modifying runner user to add docker, adm, and systemd-journal groups..."
 
 # Some configuration files such as $PATH related to the user's home directory
 # need to be changed. GitHub recommends to run post-generation scripts after
@@ -19,6 +24,8 @@ usermod -a -G docker,adm,systemd-journal runner
 # instead of rhizome user.
 # https://github.com/actions/runner-images/blob/main/docs/create-image-and-azure-resources.md#post-generation-scripts
 sudo su -c "find /opt/post-generation -mindepth 1 -maxdepth 1 -type f -name '*.sh' -exec bash {} ';'"
+
+echo "[setup-runner-user.sh] Running post-generation scripts..."
 
 # Post-generation scripts write some variables at /etc/environment file.
 # We need to reload environment variables again.
@@ -35,6 +42,8 @@ source /etc/environment
 cp -R /usr/local/share/actions-runner ./
 chown -R packer:packer actions-runner
 
+echo "[setup-runner-user.sh] Copying actions-runner to home directory..."
+
 # ./env.sh sets some variables for runner to run properly
 ./actions-runner/env.sh
 
@@ -48,6 +57,8 @@ mapfile -t env </etc/environment
 exec env -- "\${env[@]}" ./actions-runner/run.sh --jitconfig "\$1"
 EOT
 chmod +x ./actions-runner/run-withenv.sh
+
+echo "[setup-runner-user.sh] Creating start-hook.sh..."
 
 # GitHub environment variables are only available in the workflow, not for unix
 # user. We need some of these variables to run some features such as Ubicloud
@@ -64,6 +75,8 @@ fi
 EOT
 chmod +x ./actions-runner/start-hook.sh
 
+echo "[setup-runner-user.sh] Creating complete-hook.sh..."
+
 cat <<EOT > ./actions-runner/complete-hook.sh
 #!/bin/sh
 if [[ -f /home/runner/actions-runner/.ubicloud_complete_message ]]; then
@@ -71,6 +84,8 @@ if [[ -f /home/runner/actions-runner/.ubicloud_complete_message ]]; then
 fi
 EOT
 chmod +x ./actions-runner/complete-hook.sh
+
+echo "[setup-runner-user.sh] Setting up environment variables..."
 
 echo "ACTIONS_RUNNER_HOOK_JOB_STARTED=/home/runner/actions-runner/start-hook.sh
 ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/runner/actions-runner/complete-hook.sh" | sudo tee -a /etc/environment
