@@ -50,10 +50,6 @@ variable "build_resource_group_name" {
   type    = string
   default = "${env("BUILD_RG_NAME")}"
 }
-variable "gallery_image_name" {
-  type    = string
-  default = "${env("GALLERY_IMAGE_NAME")}"
-}
 variable "gallery_image_version" {
   type    = string
   default = "${env("GALLERY_IMAGE_VERSION")}"
@@ -117,10 +113,6 @@ variable "virtual_network_resource_group_name" {
 variable "virtual_network_subnet_name" {
   type    = string
   default = "${env("VNET_SUBNET")}"
-}
-variable "vm_size" {
-  type    = string
-  default = "Standard_D4s_v4"
 }
 variable "winrm_username" {         // The username used to connect to the VM via WinRM
     type    = string                // Also applies to the username used to create the VM
