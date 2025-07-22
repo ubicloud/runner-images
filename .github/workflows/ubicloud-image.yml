@@ -80,18 +80,45 @@ jobs:
           $ImageType = "${{ matrix.image_type }}"
           $TemplateDirectoryName = if ($ImageType.StartsWith("ubuntu")) { "ubuntu/templates" } else { "windows/templates" }
           $TemplateDirectoryPath = Join-Path "images" $TemplateDirectoryName | Resolve-Path
-          $TemplatePath = Join-Path $TemplateDirectoryPath "$ImageType.pkr.hcl"
           "TemplateDirectoryPath=$TemplateDirectoryPath" >> $env:GITHUB_ENV
-          "TemplatePath=$TemplatePath" >> $env:GITHUB_ENV
+
+      - name: Set build template name and image OS
+        id: set_build_template_name_and_image_os
+        shell: pwsh
+        run: |
+          $ImageType = "${{ matrix.image_type }}"
+          if ($ImageType -eq "ubuntu-22.04") {
+            $BuildTemplateName = "build.ubuntu-22_04"
+            $ImageOS = "ubuntu22"
+          } elseif ($ImageType -eq "ubuntu-22.04.gpu") {
+            $BuildTemplateName = "build.ubuntu-gpu-22_04"
+            $ImageOS = "ubuntu22-gpu"
+          } elseif ($ImageType -eq "ubuntu-22.04.arm64") {
+            $BuildTemplateName = "build.ubuntu-arm-22_04"
+            $ImageOS = "ubuntu22-arm"
+          } elseif ($ImageType -eq "ubuntu-24.04") {
+            $BuildTemplateName = "build.ubuntu-24_04"
+            $ImageOS = "ubuntu24"
+          } elseif ($ImageType -eq "ubuntu-24.04.arm64") {
+            $BuildTemplateName = "build.ubuntu-arm-24_04"
+            $ImageOS = "ubuntu24-arm"
+          } else {
+            Write-Error "Invalid image type: $ImageType"
+            exit 1
+          }
+          "BuildTemplateName=$BuildTemplateName" >> $env:GITHUB_ENV
+          "ImageOS=$ImageOS" >> $env:GITHUB_ENV
 
       - name: Build VM
         if: ${{ inputs.build_image }}
         shell: pwsh
         run: |
           ./images.CI/linux-and-win/build-image.ps1 `
+            -BuildTemplateName "$env:BuildTemplateName" `
+            -ImageOS "$env:ImageOS" `
             -ClientId "${{ secrets.AZURE_CLIENT_ID }}" `
             -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
-            -TemplatePath "$env:TemplatePath" `
+            -TemplatePath "$env:TemplateDirectoryPath" `
             -ImageName "${{ env.MANAGED_IMAGE_NAME }}" `
             -ImageResourceGroupName "${{ secrets.AZURE_RESOURCE_GROUP }}" `
             -TempResourceGroupName "packer-temp-${{ env.MANAGED_IMAGE_NAME }}" `
