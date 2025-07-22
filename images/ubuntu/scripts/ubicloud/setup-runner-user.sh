@@ -45,9 +45,27 @@ chown -R packer:packer actions-runner
 cat <<EOT > ./actions-runner/run-withenv.sh
 #!/bin/bash
 mapfile -t env </etc/environment
-exec env -- "\${env[@]}" ./actions-runner/run.sh --jitconfig "\$1"
+JIT_CONFIG="\$(cat ./actions-runner/.jit_token)"
+exec env -- "\${env[@]}" ./actions-runner/run.sh --jitconfig "\$JIT_CONFIG"
 EOT
 chmod +x ./actions-runner/run-withenv.sh
+
+# We take direct control over the unit file instead of relying on systemd-run's
+# transient unit generation. It gives us more control over the unit file
+# and avoids the issues with systemd-run's template expansion limits.
+# https://github.com/ubicloud/ubicloud/commit/e2627b5c969ef013f06bf0584fb3b9aa9a07f94e
+sudo tee /etc/systemd/system/runner-script.service <<'EOT'
+[Unit]
+Description=runner-script
+
+[Service]
+RemainAfterExit=yes
+User=runner
+Group=runner
+WorkingDirectory=/home/runner
+ExecStart=/home/runner/actions-runner/run-withenv.sh
+EOT
+sudo systemctl daemon-reload
 
 # GitHub environment variables are only available in the workflow, not for unix
 # user. We need some of these variables to run some features such as Ubicloud
