@@ -100,4 +100,9 @@ ACTIONS_RUNNER_HOOK_JOB_COMPLETED=/home/runner/actions-runner/complete-hook.sh" 
 echo "PATH=$PATH" >> ./actions-runner/.env
 
 mv ./actions-runner /home/runner/
+
+# Optimizes the runner process startup time
+# https://github.com/actions/runner/blob/6ca97eeb88810dc898e04d53efcd80d8b24bc4e4/src/Runner.Listener/Runner.cs#L193
+/home/runner/actions-runner/bin/Runner.Listener warmup && rm -rf /home/runner/actions-runner/_diag
+
 chown -R runner:runner /home/runner/actions-runner
