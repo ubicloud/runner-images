@@ -27,6 +27,11 @@ on:
         description: "Upload image to MinIO cluster"
         default: true
         type: boolean
+      convert_to_ami:
+        description: "Convert image to AWS AMI"
+        default: false
+        type: boolean
+
 
 concurrency: "${{ inputs.image_types }}-${{ inputs.image_version }}"
 
@@ -266,3 +271,80 @@ jobs:
           sha256sum ${{ env.MANAGED_IMAGE_NAME }}.raw > ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
           cat ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
           mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw.sha256
+
+  convert-to-ami:
+    if: ${{ inputs.convert_to_ami }}
+    needs: [generate-matrix, build]
+    name: upload ${{ matrix.image_type }}
+    runs-on: ubicloud-standard-16
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
+      MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
+      IMAGE_NAME: "${{ matrix.image_name }}-${{inputs.image_version }}.raw"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH access
+        uses: ubicloud/ssh-runner@v1
+        with:
+          public-ssh-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsY2oTeeKCK8pr339MREPlai6bvnlnCX3pvCCBKoJ7c enes@cakir.web.tr"
+          wait-minutes: 300
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.3.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Install MinIO client
+        run: |
+          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          sudo mv mc /usr/bin/mc
+          sudo chmod +x /usr/bin/mc
+          mc --version
+
+      - name: Set MinIO root certificates
+        run: |
+          mkdir -p ~/.mc/certs/CAs
+          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
+          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
+          EOT
+
+      - name: Download the RAW image from MinIO with version
+        run: |
+          mc cp ubicloud/ubicloud-images/${{ env.IMAGE_NAME }} ./
+
+      - name: Upload image to S3
+        run: |
+          aws s3 cp ./${{ env.IMAGE_NAME }} s3://${{ secrets.UBICLOUD_IMAGES_S3_BUCKET }}/${{ env.IMAGE_NAME }}
+
+      - name: Create containers.json file
+        run: |
+          cat <<EOT > containers.json
+          {
+            "Description": "${{ env.IMAGE_NAME }}",
+            "Format": "raw",
+            "UserBucket": {
+              "S3Bucket": "${{ secrets.UBICLOUD_IMAGES_S3_BUCKET }}",
+              "S3Key": "${{ env.IMAGE_NAME }}"
+            }
+          }
+          EOT
+      
+      # - name: Import snapshot to AWS
+      #   run: |
+      #     aws ec2 import-snapshot --description "${{ env.IMAGE_NAME }}" --disk-container file://containers.json
+
+      # - name: Wait snapshot import completion
+      #   run: |
+      #     aws ec2 wait snapshot-imported --description "${{ env.IMAGE_NAME }}"
+
+      #     snapshot_id=$(aws ec2 describe-import-snapshot-tasks --filters "Name=description,Values=${{ env.IMAGE_NAME }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.SnapshotId" --output text)
+      #     echo "Waiting for snapshot import to complete: $snapshot_id"
+      #     aws ec2 wait snapshot-import-complete --snapshot-ids "$snapshot_id"
+      #     echo "Snapshot import completed: $snapshot_id"
