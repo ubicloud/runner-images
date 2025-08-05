@@ -23,10 +23,15 @@ on:
         description: "Convert image to VHD"
         default: true
         type: boolean
-      upload_image:
+      upload_to_minio:
         description: "Upload image to MinIO cluster"
         default: true
         type: boolean
+      upload_to_aws:
+        description: "Convert image to AMI and upload to AWS"
+        default: false
+        type: boolean
+
 
 concurrency: "${{ inputs.image_types }}-${{ inputs.image_version }}"
 
@@ -184,10 +189,10 @@ jobs:
             -ClientSecret "${{ secrets.AZURE_CLIENT_SECRET }}" `
             -TenantId "${{ secrets.AZURE_TENANT_ID }}"
 
-  upload:
-    if: ${{ inputs.upload_image && always() }}
+  upload_to_minio:
+    if: ${{ inputs.upload_to_minio && always() }}
     needs: [generate-matrix, build]
-    name: upload ${{ matrix.image_type }}
+    name: minio ${{ matrix.image_type }}
     runs-on: ubicloud-standard-16
     strategy:
       fail-fast: false
@@ -266,3 +271,129 @@ jobs:
           sha256sum ${{ env.MANAGED_IMAGE_NAME }}.raw > ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
           cat ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
           mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw.sha256
+
+  upload_to_aws:
+    if: ${{ inputs.upload_to_aws }}
+    needs: [generate-matrix, build]
+    name: upload ${{ matrix.image_type }}
+    runs-on: ubicloud-standard-16
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
+      IMAGE_NAME: "${{ matrix.image_name }}-${{inputs.image_version }}.raw"
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Setup SSH access
+        uses: ubicloud/ssh-runner@v1
+        with:
+          public-ssh-key: "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIMsY2oTeeKCK8pr339MREPlai6bvnlnCX3pvCCBKoJ7c enes@cakir.web.tr"
+          wait-minutes: 120
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.3.1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Install azcopy
+        run: |
+          curl -L10 -o azcopy_v10.tar.gz "https://aka.ms/downloadazcopy-v10-linux"
+          tar --strip-components=1 --exclude=*.txt -xzvf azcopy_v10.tar.gz
+          rm azcopy_v10.tar.gz
+          sudo mv azcopy /usr/bin/azcopy
+          sudo chmod +x /usr/bin/azcopy
+          azcopy --version
+
+      - name: Azure login
+        uses: azure/login@v2
+        with:
+          creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Download the VHD image from Azure
+        env:
+          AZCOPY_CONCURRENCY_VALUE: 16
+        run: |
+          sas_token=$(az storage blob generate-sas \
+            --account-name ${{ secrets.AZURE_STORAGE_ACCOUNT }} \
+            --container-name images \
+            --name "${{ env.MANAGED_IMAGE_NAME }}.vhd" \
+            --permissions r \
+            --expiry "$(date --date='now +120 minutes' +'%Y-%m-%dT%H:%M:%SZ')" \
+            --full-uri \
+            --output tsv)
+
+          azcopy copy "$sas_token" "${{ env.MANAGED_IMAGE_NAME }}.vhd"
+
+      - name: Install vhdiinfo tool
+        run: |
+          sudo apt-get update
+          sudo apt install -y libvhdi-utils
+
+      - name: Convert VHD to RAW
+        run: |
+          VHD_IMAGE_SIZE=$(vhdiinfo -v "${{ env.MANAGED_IMAGE_NAME }}.vhd" | grep "Media size" | sed -n 's/.*(\([0-9]\+\) bytes).*/\1/p')
+          BLOCK_SIZE=512
+          BLOCK_COUNT=$(( VHD_IMAGE_SIZE / BLOCK_SIZE ))
+          dd if="${{ env.MANAGED_IMAGE_NAME }}.vhd" of="${{ env.MANAGED_IMAGE_NAME }}.raw" bs=$BLOCK_SIZE count=$BLOCK_COUNT
+
+      - name: Upload image to S3
+        run: |
+          aws s3 cp ./${{ env.MANAGED_IMAGE_NAME }}.raw s3://${{ secrets.UBICLOUD_IMAGES_S3_BUCKET }}/${{ env.IMAGE_NAME }}
+
+      - name: Create containers.json file
+        run: |
+          cat <<EOT > containers.json
+          {
+            "Description": "${{ env.IMAGE_NAME }}",
+            "Format": "raw",
+            "UserBucket": {
+              "S3Bucket": "${{ secrets.UBICLOUD_IMAGES_S3_BUCKET }}",
+              "S3Key": "${{ env.IMAGE_NAME }}"
+            }
+          }
+          EOT
+
+      - name: Import snapshot to AWS
+        id: import-snapshot
+        run: |
+          import_task_id=$(aws ec2 import-snapshot --description "${{ env.IMAGE_NAME }}" --disk-container file://containers.json --query "ImportTaskId" --output text)
+          echo "import_task_id=$import_task_id" >> $GITHUB_OUTPUT
+
+      - name: Wait snapshot import completion
+        run: |
+          status=""
+          while [ "$status" != "completed" ]; do
+            status=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.Status" --output text)
+            progress=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.Progress" --output text)
+            echo "Current status: $status (Progress: $progress%)"
+            if [ "$status" == "completed" ]; then
+              echo "Snapshot import completed successfully."
+              break
+            elif [ "$status" == "cancelled" ] || [ "$status" == "failed" ]; then
+              echo "Snapshot import was cancelled or failed."
+              exit 1
+            fi
+            sleep 20
+          done
+
+      - name: Get snapshot ID
+        id: get-snapshot-id
+        run: |
+          snapshot_id=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.SnapshotId" --output text)
+          echo "snapshot_id=$snapshot_id" >> $GITHUB_OUTPUT
+          echo "Snapshot ID: $snapshot_id"
+        
+      - name: Register image
+        run: |
+          aws ec2 register-image \
+            --name "${{ env.IMAGE_NAME }}" \
+            --architecture x86_64 \
+            --virtualization-type hvm \
+            --ena-support \
+            --root-device-name /dev/sda1 \
+            --block-device-mappings '[{"DeviceName":"/dev/sda1","Ebs":{"SnapshotId":"${{ steps.get-snapshot-id.outputs.snapshot_id }}","VolumeSize":75}}]' \
