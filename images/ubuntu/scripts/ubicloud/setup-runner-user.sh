@@ -11,6 +11,19 @@ echo 'runner ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/98-runner
 # Default GitHub hosted runners have additional adm,systemd-journal groups.
 usermod -a -G docker,adm,systemd-journal runner
 
+# Add runneradmin user
+adduser --disabled-password runneradmin --shell /bin/bash --gecos ""
+usermod -a -G sudo,adm runneradmin
+echo "runneradmin ALL=(ALL:ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/runneradmin
+mkdir -p /home/runneradmin/.ssh
+touch /home/runneradmin/.ssh/authorized_keys
+chown -R runneradmin:runneradmin /home/runneradmin/.ssh
+chmod 700 /home/runneradmin/.ssh
+chmod 600 /home/runneradmin/.ssh/authorized_keys
+
+# Add ubuntu user
+useradd ubuntu --comment Ubuntu --groups adm,audio,cdrom,dialout,dip,floppy,lxd,netdev,plugdev,sudo,video --shell /bin/bash -m
+
 # Some configuration files such as $PATH related to the user's home directory
 # need to be changed. GitHub recommends to run post-generation scripts after
 # initial boot.
