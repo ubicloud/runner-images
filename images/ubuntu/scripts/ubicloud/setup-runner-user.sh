@@ -11,6 +11,10 @@ echo 'runner ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/98-runner
 # Default GitHub hosted runners have additional adm,systemd-journal groups.
 usermod -a -G docker,adm,systemd-journal runner
 
+# Create runneradmin user so that cloudinit won’t waste time creating it
+adduser --disabled-password runneradmin --shell /bin/bash --gecos ''
+usermod -a -G sudo,adm runneradmin
+
 # Some configuration files such as $PATH related to the user's home directory
 # need to be changed. GitHub recommends to run post-generation scripts after
 # initial boot.
