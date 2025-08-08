@@ -31,6 +31,19 @@ source /etc/environment
 adduser --disabled-password --shell /bin/bash --gecos '' runneradmin
 usermod -a -G sudo,adm,systemd-journal runneradmin
 
+### Begin AWS only
+echo "runneradmin ALL=(ALL:ALL) NOPASSWD:ALL" | sudo tee /etc/sudoers.d/runneradmin
+mkdir -p /home/runneradmin/.ssh
+touch /home/runneradmin/.ssh/authorized_keys
+chown -R runneradmin:runneradmin /home/runneradmin/.ssh
+chmod 700 /home/runneradmin/.ssh
+chmod 600 /home/runneradmin/.ssh/authorized_keys
+
+# Add ubuntu user
+useradd ubuntu --comment Ubuntu --groups adm,audio,cdrom,dialout,dip,floppy,lxd,netdev,plugdev,sudo,video --shell /bin/bash -m
+### End AWS only
+
+
 # We placed the script in the "/usr/local/share/" directory while generating
 # the golden image. However, it needs to be moved to the home directory because
 # the runner creates some configuration files at the script location. Since the
