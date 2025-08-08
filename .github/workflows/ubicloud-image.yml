@@ -368,8 +368,8 @@ jobs:
         run: |
           status=""
           while [ "$status" != "completed" ]; do
-            status=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].Status" --output text)
-            progress=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].Progress" --output text)
+            status=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.Status" --output text)
+            progress=$(aws ec2 describe-import-snapshot-tasks --import-task-ids "${{ steps.import-snapshot.outputs.import_task_id }}" --query "ImportSnapshotTasks[0].SnapshotTaskDetail.Progress" --output text)
             echo "Current status: $status (Progress: $progress%)"
             if [ "$status" == "completed" ]; then
               echo "Snapshot import completed successfully."
