@@ -24,6 +24,13 @@ sudo su -c "find /opt/post-generation -mindepth 1 -maxdepth 1 -type f -name '*.s
 # We need to reload environment variables again.
 source /etc/environment
 
+# IMPORTANT NOTE: post-generation scripts use the latest entry
+# in the /etc/passwd file, so we have to create other users after running them.
+
+# Create runneradmin user so that cloudinit won’t waste time creating it
+adduser --disabled-password --shell /bin/bash --gecos '' runneradmin
+usermod -a -G sudo,adm,systemd-journal runneradmin
+
 # We placed the script in the "/usr/local/share/" directory while generating
 # the golden image. However, it needs to be moved to the home directory because
 # the runner creates some configuration files at the script location. Since the
