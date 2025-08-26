@@ -1,11 +1,7 @@
-| Announcements |
-|-|
-| [[Windows/Ubuntu] Docker Server and Client will be updated to version 29.1.*, Docker Compose will be updated to version 2.40.3 on February 9th, 2026](https://github.com/actions/runner-images/issues/13474) |
-***
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
 - Kernel Version: 6.8.0-1044-azure
-- Image Version: 20260322.68.1
+- Image Version: 20260312.1.0
 - Systemd version: 249.11-0ubuntu3.17
 
 ## Installed Software
@@ -30,7 +26,7 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.20.1
+- Helm 3.20.0
 - Homebrew 5.1.0
 - Miniconda 26.1.1
 - Npm 10.8.2
@@ -39,7 +35,7 @@
 - Pip3 22.0.2
 - Pipx 1.10.1
 - RubyGems 3.3.5
-- Vcpkg (build from commit b472291f29)
+- Vcpkg (build from commit efa4634bd5)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -58,15 +54,15 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.12
-- Gradle 9.4.1
-- Lerna 9.0.7
-- Maven 3.9.14
-- Sbt 1.12.6
+- Gradle 9.4.0
+- Lerna 9.0.6
+- Maven 3.9.13
+- Sbt 1.12.5
 
 ### Tools
 - Ansible 2.17.14
 - apt-fast 1.10.0
-- AzCopy 10.32.2 - available by `azcopy` and `azcopy10` aliases
+- AzCopy 10.32.1 - available by `azcopy` and `azcopy10` aliases
 - Bazel 9.0.1
 - Bazelisk 1.28.1
 - Bicep 0.41.2
@@ -111,18 +107,18 @@ to accomplish this.
 - Ninja 1.13.2
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.3.2
-- AWS CLI 2.34.14
-- AWS CLI Session Manager Plugin 1.2.792.0
-- AWS SAM CLI 1.156.0
+- Alibaba Cloud CLI 3.2.13
+- AWS CLI 2.34.7
+- AWS CLI Session Manager Plugin 1.2.779.0
+- AWS SAM CLI 1.155.2
 - Azure CLI 2.84.0
 - Azure CLI (azure-devops) 1.0.2
-- GitHub CLI 2.88.1
-- Google Cloud CLI 561.0.0
-- Netlify CLI 24.4.0
-- OpenShift CLI 4.21.6
+- GitHub CLI 2.88.0
+- Google Cloud CLI 560.0.0
+- Netlify CLI 24.1.0
+- OpenShift CLI 4.21.5
 - ORAS CLI 1.3.1
-- Vercel CLI 50.35.0
+- Vercel CLI 50.32.3
 
 ### Java
 | Version             | Environment Variable |
@@ -162,11 +158,11 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 146.0.7680.153
-- ChromeDriver 146.0.7680.153
+- Google Chrome 146.0.7680.71
+- ChromeDriver 146.0.7680.72
 - Chromium 146.0.7680.0
-- Microsoft Edge 146.0.3856.72
-- Microsoft Edge WebDriver 146.0.3856.72
+- Microsoft Edge 145.0.3800.97
+- Microsoft Edge WebDriver 145.0.3800.97
 - Selenium server 4.41.0
 - Mozilla Firefox 148.0.2
 - Geckodriver 0.36.0
@@ -180,7 +176,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 | SELENIUM_JAR_PATH | /usr/share/java/selenium-server.jar   |
 
 ### .NET Tools
-- .NET Core SDK: 8.0.125, 8.0.206, 8.0.319, 8.0.419, 9.0.115, 9.0.205, 9.0.312, 10.0.105, 10.0.201
+- .NET Core SDK: 8.0.125, 8.0.206, 8.0.319, 8.0.419, 9.0.115, 9.0.205, 9.0.312, 10.0.104, 10.0.200
 - nbgv 3.9.50+6feeb89450
 
 ### Databases
@@ -238,7 +234,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 - 3.2.10
 - 3.3.10
 - 3.4.9
-- 4.0.2
+- 4.0.1
 
 ### PowerShell Tools
 - PowerShell 7.4.14
@@ -290,7 +286,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | bison                  | 2:3.8.2+dfsg-1build1                |
 | brotli                 | 1.0.9-2build6                       |
 | bzip2                  | 1.0.8-5build1                       |
-| coreutils              | 8.32-4.1ubuntu1.3                   |
+| coreutils              | 8.32-4.1ubuntu1.2                   |
 | curl                   | 7.81.0-1ubuntu1.23                  |
 | dbus                   | 1.12.20-2ubuntu4.1                  |
 | dnsutils               | 1:9.18.39-0ubuntu0.22.04.2          |
@@ -374,4 +370,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.5-2ubuntu1                      |
 | zip                    | 3.0-12build2                        |
 | zsync                  | 0.6.2-3ubuntu1                      |
-
