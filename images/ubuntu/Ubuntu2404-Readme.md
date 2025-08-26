@@ -1,11 +1,7 @@
-| Announcements |
-|-|
-| [[Windows/Ubuntu] Docker Server and Client will be updated to version 29.1.*, Docker Compose will be updated to version 2.40.3 on February 9th, 2026](https://github.com/actions/runner-images/issues/13474) |
-***
 # Ubuntu 24.04
 - OS Version: 24.04.3 LTS
 - Kernel Version: 6.14.0-1017-azure
-- Image Version: 20260302.42.1
+- Image Version: 20260202.1.0
 - Systemd version: 255.4-1ubuntu8.12
 
 ## Installed Software
@@ -29,14 +25,14 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.20.0
-- Homebrew 5.0.16
+- Homebrew 5.0.13
 - Miniconda 25.11.1
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
 - Pipx 1.8.0
 - RubyGems 3.4.20
-- Vcpkg (build from commit 96fb8cef55)
+- Vcpkg (build from commit 6d7bf7ef21)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -56,12 +52,12 @@ to accomplish this.
 ### Project Management
 - Ant 1.10.14
 - Gradle 9.3.1
-- Lerna 9.0.5
+- Lerna 9.0.3
 - Maven 3.9.12
 
 ### Tools
-- Ansible 2.20.3
-- AzCopy 10.32.1 - available by `azcopy` and `azcopy10` aliases
+- Ansible 2.20.2
+- AzCopy 10.31.1 - available by `azcopy` and `azcopy10` aliases
 - Bazel 9.0.0
 - Bazelisk 1.28.1
 - Bicep 0.41.2
@@ -84,30 +80,30 @@ to accomplish this.
 - Kustomize 5.8.1
 - MediaInfo 24.01
 - Mercurial 6.7.2
-- Minikube 1.38.1
+- Minikube 1.38.0
 - n 10.2.0
 - Newman 6.2.2
 - nvm 0.40.4
 - OpenSSL 3.0.13-0ubuntu3.7
-- Packer 1.15.0
+- Packer 1.14.3
 - Parcel 2.16.4
 - Podman 4.9.3
-- Pulumi 3.224.0
+- Pulumi 3.218.0
 - Skopeo 1.13.3
 - Sphinx Open Source Search Server 2.2.11
 - yamllint 1.38.0
-- yq 4.52.4
+- yq 4.52.2
 - zstd 1.5.7
 - Ninja 1.13.2
 
 ### CLI Tools
-- AWS CLI 2.34.0
-- AWS CLI Session Manager Plugin 1.2.779.0
-- AWS SAM CLI 1.154.0
-- Azure CLI 2.83.0
+- AWS CLI 2.33.12
+- AWS CLI Session Manager Plugin 1.2.764.0
+- AWS SAM CLI 1.153.1
+- Azure CLI 2.82.0
 - Azure CLI (azure-devops) 1.0.2
-- GitHub CLI 2.87.3
-- Google Cloud CLI 558.0.0
+- GitHub CLI 2.86.0
+- Google Cloud CLI 554.0.0
 
 ### Java
 | Version             | Environment Variable |
@@ -142,13 +138,13 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 145.0.7632.116
-- ChromeDriver 145.0.7632.117
-- Chromium 145.0.7632.0
-- Microsoft Edge 145.0.3800.82
-- Microsoft Edge WebDriver 145.0.3800.82
-- Selenium server 4.41.0
-- Mozilla Firefox 148.0
+- Google Chrome 144.0.7559.109
+- ChromeDriver 144.0.7559.109
+- Chromium 144.0.7559.0
+- Microsoft Edge 144.0.3719.104
+- Microsoft Edge WebDriver 144.0.3719.104
+- Selenium server 4.40.0
+- Mozilla Firefox 147.0.2
 - Geckodriver 0.36.0
 
 #### Environment variables
@@ -219,7 +215,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 
 #### PowerShell Modules
 - Az: 14.6.0
-- Microsoft.Graph: 2.35.1
+- Microsoft.Graph: 2.35.0
 - Pester: 5.7.1
 - PSScriptAnalyzer: 1.24.0
 
@@ -328,4 +324,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1ubuntu0.2 |
 | zip                    | 3.0-13ubuntu0.2              |
 | zsync                  | 0.6.2-5build1                |
-
