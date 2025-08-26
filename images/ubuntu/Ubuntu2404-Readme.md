@@ -1,11 +1,7 @@
-| Announcements |
-|-|
-| [[Windows/Ubuntu] Docker Server and Client will be updated to version 29.1.*, Docker Compose will be updated to version 2.40.3 on February 9th, 2026](https://github.com/actions/runner-images/issues/13474) |
-***
 # Ubuntu 24.04
 - OS Version: 24.04.4 LTS
-- Kernel Version: 6.17.0-1008-azure
-- Image Version: 20260329.72.1
+- Kernel Version: 6.17.0-1010-azure
+- Image Version: 20260401.1.0
 - Systemd version: 255.4-1ubuntu8.14
 
 ## Installed Software
@@ -29,14 +25,14 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.20.1
-- Homebrew 5.1.1
+- Homebrew 5.1.3
 - Miniconda 26.1.1
 - Npm 10.8.2
 - Pip 24.0
 - Pip3 24.0
-- Pipx 1.11.0
+- Pipx 1.11.1
 - RubyGems 3.4.20
-- Vcpkg (build from commit b5d1a94fb7)
+- Vcpkg (build from commit fc3be1ebea)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -70,7 +66,7 @@ to accomplish this.
 - CodeQL Action Bundle 2.25.1
 - Docker Amazon ECR Credential Helper 0.12.0
 - Docker Compose v2 2.38.2
-- Docker-Buildx 0.32.1
+- Docker-Buildx 0.33.0
 - Docker Client 28.0.4
 - Docker Server 28.0.4
 - Fastlane 2.232.2
@@ -101,13 +97,13 @@ to accomplish this.
 - Ninja 1.13.2
 
 ### CLI Tools
-- AWS CLI 2.34.19
+- AWS CLI 2.34.21
 - AWS CLI Session Manager Plugin 1.2.792.0
 - AWS SAM CLI 1.157.1
 - Azure CLI 2.84.0
 - Azure CLI (azure-devops) 1.0.2
 - GitHub CLI 2.89.0
-- Google Cloud CLI 562.0.0
+- Google Cloud CLI 563.0.0
 
 ### Java
 | Version             | Environment Variable |
@@ -142,7 +138,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 146.0.7680.164
+- Google Chrome 146.0.7680.177
 - ChromeDriver 146.0.7680.165
 - Chromium 146.0.7680.0
 - Microsoft Edge 146.0.3856.84
@@ -302,7 +298,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | patchelf               | 0.18.0-1.1build1             |
 | pigz                   | 2.8-1                        |
 | pkg-config             | 1.8.1-2build1                |
-| pollinate              | 4.33-3.1ubuntu1.1            |
+| pollinate              | 4.33-3.1ubuntu1.3            |
 | python-is-python3      | 3.11.4-1                     |
 | rpm                    | 4.18.2+dfsg-2.1build2        |
 | rsync                  | 3.2.7-1ubuntu1.2             |
@@ -328,4 +324,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.6.1+really5.4.5-1ubuntu0.2 |
 | zip                    | 3.0-13ubuntu0.2              |
 | zsync                  | 0.6.2-5build1                |
-

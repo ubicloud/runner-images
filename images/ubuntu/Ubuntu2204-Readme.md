@@ -1,11 +1,7 @@
-| Announcements |
-|-|
-| [[Windows/Ubuntu] Docker Server and Client will be updated to version 29.1.*, Docker Compose will be updated to version 2.40.3 on February 9th, 2026](https://github.com/actions/runner-images/issues/13474) |
-***
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
 - Kernel Version: 6.8.0-1044-azure
-- Image Version: 20260329.74.1
+- Image Version: 20260401.1.0
 - Systemd version: 249.11-0ubuntu3.19
 
 ## Installed Software
@@ -31,15 +27,15 @@
 ### Package Management
 - cpan 1.64
 - Helm 3.20.1
-- Homebrew 5.1.1
+- Homebrew 5.1.3
 - Miniconda 26.1.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
 - Pip 22.0.2
 - Pip3 22.0.2
-- Pipx 1.11.0
+- Pipx 1.11.1
 - RubyGems 3.3.5
-- Vcpkg (build from commit b5d1a94fb7)
+- Vcpkg (build from commit fc3be1ebea)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -75,7 +71,7 @@ to accomplish this.
 - CodeQL Action Bundle 2.25.1
 - Docker Amazon ECR Credential Helper 0.12.0
 - Docker Compose v2 2.38.2
-- Docker-Buildx 0.32.1
+- Docker-Buildx 0.33.0
 - Docker Client 28.0.4
 - Docker Server 28.0.4
 - Fastlane 2.232.2
@@ -112,17 +108,17 @@ to accomplish this.
 
 ### CLI Tools
 - Alibaba Cloud CLI 3.3.3
-- AWS CLI 2.34.19
+- AWS CLI 2.34.21
 - AWS CLI Session Manager Plugin 1.2.792.0
 - AWS SAM CLI 1.157.1
 - Azure CLI 2.84.0
 - Azure CLI (azure-devops) 1.0.2
 - GitHub CLI 2.89.0
-- Google Cloud CLI 562.0.0
-- Netlify CLI 24.8.1
-- OpenShift CLI 4.21.7
+- Google Cloud CLI 563.0.0
+- Netlify CLI 24.9.0
+- OpenShift CLI 4.21.8
 - ORAS CLI 1.3.1
-- Vercel CLI 50.37.3
+- Vercel CLI 50.38.1
 
 ### Java
 | Version             | Environment Variable |
@@ -162,7 +158,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 146.0.7680.164
+- Google Chrome 146.0.7680.177
 - ChromeDriver 146.0.7680.165
 - Chromium 146.0.7680.0
 - Microsoft Edge 146.0.3856.84
@@ -347,7 +343,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | patchelf               | 0.14.3-1                            |
 | pigz                   | 2.6-1                               |
 | pkg-config             | 0.29.2-1ubuntu3                     |
-| pollinate              | 4.33-3ubuntu2.1                     |
+| pollinate              | 4.33-3ubuntu2.3                     |
 | python-is-python3      | 3.9.2-2                             |
 | rpm                    | 4.17.0+dfsg1-4build1                |
 | rsync                  | 3.2.7-0ubuntu0.22.04.4              |
@@ -374,4 +370,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.5-2ubuntu1                      |
 | zip                    | 3.0-12build2                        |
 | zsync                  | 0.6.2-3ubuntu1                      |
-
