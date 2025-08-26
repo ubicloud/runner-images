@@ -1,11 +1,7 @@
-| Announcements |
-|-|
-| [[Ubuntu & Windows] Four tools scheduled for deprecation on November 3, 2025](https://github.com/actions/runner-images/issues/12898) |
-***
 # Ubuntu 22.04
 - OS Version: 22.04.5 LTS
 - Kernel Version: 6.8.0-1041-azure
-- Image Version: 20251125.163.1
+- Image Version: 20251105.1.0
 - Systemd version: 249.11-0ubuntu3.17
 
 ## Installed Software
@@ -18,7 +14,7 @@
 - Dash 0.5.11+git20210903+057cd650a4ed-3build1
 - GNU C++: 10.5.0, 11.4.0, 12.3.0
 - GNU Fortran: 10.5.0, 11.4.0, 12.3.0
-- Julia 1.12.2
+- Julia 1.12.1
 - Kotlin 2.2.21-release-469
 - Mono 6.12.0.200
 - MSBuild 16.10.1.31701 (Mono 6.12.0.200)
@@ -30,8 +26,8 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.19.2
-- Homebrew 5.0.3
+- Helm 3.19.0
+- Homebrew 4.6.20
 - Miniconda 25.9.1
 - Npm 10.8.2
 - NuGet 6.6.1.2
@@ -39,7 +35,7 @@
 - Pip3 22.0.2
 - Pipx 1.8.0
 - RubyGems 3.3.5
-- Vcpkg (build from commit 9aee6e968f)
+- Vcpkg (build from commit 142f80bb08)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -58,8 +54,8 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.12
-- Gradle 9.2.1
-- Lerna 9.0.1
+- Gradle 9.2.0
+- Lerna 9.0.0
 - Maven 3.9.11
 - Sbt 1.11.7
 
@@ -78,12 +74,12 @@ to accomplish this.
 - Docker-Buildx 0.30.1
 - Docker Client 28.0.4
 - Docker Server 28.0.4
-- Fastlane 2.229.1
-- Git 2.52.0
+- Fastlane 2.228.0
+- Git 2.51.2
 - Git LFS 3.7.1
 - Git-ftp 1.6.0
 - Haveged 1.9.14
-- Heroku 10.15.1
+- Heroku 10.15.0
 - jq 1.6
 - Kind 0.30.0
 - Kubectl 1.34.2
@@ -96,33 +92,33 @@ to accomplish this.
 - Newman 6.2.1
 - nvm 0.40.3
 - OpenSSL 3.0.2-0ubuntu1.20
-- Packer 1.14.3
+- Packer 1.14.2
 - Parcel 2.16.1
 - Podman 3.4.4
-- Pulumi 3.208.0
+- Pulumi 3.206.0
 - R 4.5.2
 - Skopeo 1.4.1
 - Sphinx Open Source Search Server 2.2.11
 - SVN 1.14.1
-- Terraform 1.14.0
+- Terraform 1.13.5
 - yamllint 1.37.1
 - yq 4.49.2
 - zstd 1.5.7
 - Ninja 1.13.2
 
 ### CLI Tools
-- Alibaba Cloud CLI 3.1.5
-- AWS CLI 2.32.5
-- AWS CLI Session Manager Plugin 1.2.764.0
-- AWS SAM CLI 1.148.0
-- Azure CLI 2.80.0
+- Alibaba Cloud CLI 3.1.2
+- AWS CLI 2.31.30
+- AWS CLI Session Manager Plugin 1.2.707.0
+- AWS SAM CLI 1.145.2
+- Azure CLI 2.79.0
 - Azure CLI (azure-devops) 1.0.2
-- GitHub CLI 2.83.1
-- Google Cloud CLI 548.0.0
-- Netlify CLI 23.11.1
-- OpenShift CLI 4.20.5
+- GitHub CLI 2.83.0
+- Google Cloud CLI 546.0.0
+- Netlify CLI 23.10.0
+- OpenShift CLI 4.20.2
 - ORAS CLI 1.3.0
-- Vercel CLI 48.10.13
+- Vercel CLI 48.8.2
 
 ### Java
 | Version             | Environment Variable |
@@ -148,27 +144,27 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Stack 3.7.1
 
 ### Rust Tools
-- Cargo 1.91.1
-- Rust 1.91.1
-- Rustdoc 1.91.1
+- Cargo 1.91.0
+- Rust 1.91.0
+- Rustdoc 1.91.0
 - Rustup 1.28.2
 
 #### Packages
 - Bindgen 0.72.1
-- Cargo audit 0.22.0
+- Cargo audit 0.21.2
 - Cargo clippy 0.1.91
 - Cargo outdated 0.17.0
 - Cbindgen 0.29.2
 - Rustfmt 1.8.0
 
 ### Browsers and Drivers
-- Google Chrome 142.0.7444.175
-- ChromeDriver 142.0.7444.175
+- Google Chrome 142.0.7444.134
+- ChromeDriver 142.0.7444.61
 - Chromium 142.0.7444.0
-- Microsoft Edge 142.0.3595.94
-- Microsoft Edge WebDriver 142.0.3595.94
+- Microsoft Edge 142.0.3595.53
+- Microsoft Edge WebDriver 142.0.3595.53
 - Selenium server 4.38.0
-- Mozilla Firefox 145.0.2
+- Mozilla Firefox 144.0.2
 - Geckodriver 0.36.0
 
 #### Environment variables
@@ -180,7 +176,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 | SELENIUM_JAR_PATH | /usr/share/java/selenium-server.jar   |
 
 ### .NET Tools
-- .NET Core SDK: 8.0.122, 8.0.206, 8.0.319, 8.0.416, 9.0.112, 9.0.205, 9.0.308, 10.0.100
+- .NET Core SDK: 8.0.121, 8.0.206, 8.0.318, 8.0.415, 9.0.111, 9.0.205, 9.0.306
 - nbgv 3.9.50+6feeb89450
 
 ### Databases
@@ -218,7 +214,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 #### Node.js
 - 20.19.5
 - 22.21.1
-- 24.11.1
+- 24.11.0
 
 #### Python
 - 3.9.25
@@ -287,13 +283,13 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | alpine:3.18          | sha256:de0eb0b3f2a47ba1eb89389859a9bd88b28e82f5826b6969ad604979713c2d4f  | 2025-02-14 |
 | alpine:3.19          | sha256:6baf43584bcb78f2e5847d1de515f23499913ac9f12bdf834811a3145eb11ca1  | 2025-10-08 |
 | debian:10            | sha256:58ce6f1271ae1c8a2006ff7d3e54e9874d839f573d8009c20154ad0f2fb0a225  | 2024-06-13 |
-| debian:11            | sha256:ee239c601913c0d3962208299eef70dcffcb7aac1787f7a02f6d3e2b518755e6  | 2025-11-17 |
-| moby/buildkit:latest | sha256:de10faf919fc71ba4eb1dd7bd6449566d012b0c9436b1c61bfee21d621b009aa  | 2025-11-20 |
+| debian:11            | sha256:37d7709beef67abbccfcac94a2150d25fdac3764251a60f2c20e9fd069d228d8  | 2025-11-03 |
+| moby/buildkit:latest | sha256:0f63d66f8d2de0bd16438284831a3e9ee6ca7cd57b6eb3ed6e38a7a456590fa7  | 2025-11-05 |
 | node:18              | sha256:c6ae79e38498325db67193d391e6ec1d224d96c693a8a4d943498556716d3783  | 2025-03-27 |
 | node:18-alpine       | sha256:8d6421d663b4c28fd3ebc498332f249011d118945588d0a35cb9bc4b8ca09d9e  | 2025-03-27 |
-| node:20              | sha256:66d2eb8b463114d1f416d61dbd5fa9cea83e8fc250feb997338467728a06124b  | 2025-11-25 |
-| node:20-alpine       | sha256:16858294071a56ffd4cce9f17b57136cc39e41507b40e245b4f8e906f7a19463  | 2025-11-25 |
-| node:22              | sha256:4ad2c2b350ab49fb637ab40a269ffe207c61818bb7eb3a4ea122001a0c605e1f  | 2025-11-18 |
+| node:20              | sha256:47dacd49500971c0fbe602323b2d04f6df40a933b123889636fc1f76bf69f58a  | 2025-11-04 |
+| node:20-alpine       | sha256:6178e78b972f79c335df281f4b7674a2d85071aae2af020ffa39f0a770265435  | 2025-10-16 |
+| node:22              | sha256:dcf06103a9d4087e3244a51697adbbb85331dcb7161dbe994ca1cd07dd32e2a5  | 2025-11-04 |
 | node:22-alpine       | sha256:b2358485e3e33bc3a33114d2b1bdb18cdbe4df01bd2b257198eb51beb1f026c5  | 2025-10-29 |
 | ubuntu:20.04         | sha256:8feb4d8ca5354def3d8fce243717141ce31e2c428701f6682bd2fafe15388214  | 2025-04-08 |
 | ubuntu:22.04         | sha256:104ae83764a5119017b8e8d6218fa0832b09df65aae7d5a6de29a85d813da2fb  | 2025-10-13 |
@@ -393,4 +389,3 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | xz-utils               | 5.2.5-2ubuntu1                      |
 | zip                    | 3.0-12build2                        |
 | zsync                  | 0.6.2-3ubuntu1                      |
-
