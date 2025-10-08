@@ -1,6 +1,31 @@
 build {
-  sources = ["source.azure-arm.image"]
-  name = "ubuntu-22_04"
+  sources = ["source.azure-arm.image", "source.amazon-ebs.image"]
+  name    = "ubuntu-22_04"
+
+  // =====================================
+  // ========== UBICLOUD AWS EXTRAS ======
+  // =====================================
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts         = ["${path.root}/../scripts/ubicloud/aws-pre.sh"]
+    only            = ["amazon-ebs.image"]
+  }
+
+  # Dummy file added to please Azure script compatibility
+  provisioner "file" {
+    destination = "/tmp/waagent.conf"
+    source      = "${path.root}/../scripts/ubicloud/aws-waagent.conf"
+    only        = ["amazon-ebs.image"]
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["mv /tmp/waagent.conf /etc"]
+    only            = ["amazon-ebs.image"]
+  }
+  // =====================================
+  // ========== UBICLOUD AWS EXTRAS ======
+  // =====================================
 
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
@@ -265,7 +290,18 @@ build {
       "${path.root}/../scripts/ubicloud/configure-docker.sh",
       "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
       "${path.root}/../scripts/ubicloud/install-packages.sh",
-      "${path.root}/../scripts/ubicloud/generalize-image.sh"
     ]
+  }
+
+  provisioner "shell" {
+    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts             = ["${path.root}/../scripts/ubicloud/generalize-image.sh"]
+    only                = ["azure-arm.image"]
+  }
+
+  provisioner "shell" {
+    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts             = ["${path.root}/../scripts/ubicloud/aws-optimize.sh"]
+    only                = ["amazon-ebs.image"]
   }
 }
