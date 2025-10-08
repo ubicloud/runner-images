@@ -5,35 +5,35 @@
       "readme": "Ubuntu2204-Readme.md",
       "image_name": "github-ubuntu-2204-x64",
       "image_os": "ubuntu22",
-      "build_template_name": "build.ubuntu-22_04"
+      "build_template_name": "build.ubuntu-22_04.azure-arm.image"
     },
     {
       "image_type": "ubuntu-22.04.arm64",
       "readme": "Ubuntu2204-Readme.md",
       "image_name": "github-ubuntu-2204-arm64",
       "image_os": "ubuntu22-arm",
-      "build_template_name": "build.ubuntu-arm-22_04"
+      "build_template_name": "build.ubuntu-arm-22_04.azure-arm.image"
     },
     {
       "image_type": "ubuntu-22.04.gpu",
       "readme": "Ubuntu2204-Readme.md",
       "image_name": "github-gpu-ubuntu-2204-x64",
       "image_os": "ubuntu22-gpu",
-      "build_template_name": "build.ubuntu-gpu-22_04"
+      "build_template_name": "build.ubuntu-gpu-22_04.azure-arm.image"
     },
     {
       "image_type": "ubuntu-24.04",
       "readme": "Ubuntu2404-Readme.md",
       "image_name": "github-ubuntu-2404-x64",
       "image_os": "ubuntu24",
-      "build_template_name": "build.ubuntu-24_04"
+      "build_template_name": "build.ubuntu-24_04.azure-arm.image"
     },
     {
       "image_type": "ubuntu-24.04.arm64",
       "readme": "Ubuntu2404-Readme.md",
       "image_name": "github-ubuntu-2404-arm64",
       "image_os": "ubuntu24-arm",
-      "build_template_name": "build.ubuntu-arm-24_04"
+      "build_template_name": "build.ubuntu-arm-24_04.azure-arm.image"
     }
   ]
 }
