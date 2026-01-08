@@ -15,10 +15,15 @@ on:
         description: "Image version in semver format. You can get current version from the README.md file"
         required: true
         type: string
+      prod_account:
+        description: "Upload images to prod account"
+        required: true
+        default: true
+        type: boolean
       dev_account:
-        description: "Upload images to dev account instead of prod"
-        required: false
-        default: false
+        description: "Upload images to dev account"
+        required: true
+        default: true
         type: boolean
 
 concurrency: "${{ inputs.image_types }}-${{ inputs.image_version }}"
@@ -75,21 +80,33 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y rclone
 
-      - name: Configure rclone for R2
-      
-        run: |
-          rclone config create r2 s3 \
-            provider Cloudflare \
-            access_key_id ${{ inputs.dev_account && secrets.CLOUDFLARE_R2_DEV_ACCESS_KEY_ID || secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }} \
-            secret_access_key ${{ inputs.dev_account && secrets.CLOUDFLARE_R2_DEV_SECRET_ACCESS_KEY || secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }} \
-            endpoint ${{ inputs.dev_account && secrets.CLOUDFLARE_R2_DEV_ENDPOINT || secrets.CLOUDFLARE_R2_ENDPOINT }} \
-            no_check_bucket true
-
       - name: Download the RAW image from MinIO
         run: |
           mc cp ubicloud/ubicloud-images/${{ env.MANAGED_IMAGE_NAME }}.raw ${{ env.MANAGED_IMAGE_NAME }}.raw
           mc cp ubicloud/ubicloud-images/${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
-      - name: Upload image to R2 with rclone
+
+      - name: Upload image to R2 dev account
+        if: ${{ inputs.dev_account }}
         run: |
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2:${{ inputs.dev_account && 'ubicloud-images-dev' || 'ubicloud-images' }}/
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2:${{ inputs.dev_account && 'ubicloud-images-dev' || 'ubicloud-images' }}/
+          rclone config create r2-dev s3 \
+            provider Cloudflare \
+            access_key_id ${{secrets.CLOUDFLARE_R2_DEV_ACCESS_KEY_ID }} \
+            secret_access_key ${{secrets.CLOUDFLARE_R2_DEV_SECRET_ACCESS_KEY }} \
+            endpoint ${{secrets.CLOUDFLARE_R2_DEV_ENDPOINT }} \
+            no_check_bucket true
+
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2-dev:ubicloud-images-dev/
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2-dev:ubicloud-images-dev/
+
+      - name: Upload image to R2 prod account
+        if: ${{ inputs.prod_account }}
+        run: |
+          rclone config create r2-prod s3 \
+            provider Cloudflare \
+            access_key_id ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }} \
+            secret_access_key ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }} \
+            endpoint ${{ secrets.CLOUDFLARE_R2_ENDPOINT }} \
+            no_check_bucket true
+
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2-prod:ubicloud-images/
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2-prod:ubicloud-images/
