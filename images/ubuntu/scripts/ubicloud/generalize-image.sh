@@ -70,4 +70,8 @@ sync
 
 # Delete the packer account
 touch /var/run/utmp
-userdel -f -r packer
+echo "Processes running as packer user:"
+ps -u packer -o pid,ppid,cmd || true
+# pkill -u packer || true
+# sleep 2
+userdel -f -r packer || true
