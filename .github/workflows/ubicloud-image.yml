@@ -101,6 +101,7 @@ jobs:
             -ImageVersion "${{ inputs.image_version }}"
         env:
           PACKER_LOG: 1
+          PACKER_AZURE_DEBUG_LOG: 1
           PACKER_LOG_PATH: "/tmp/packer-log.txt"
 
       - name: Copy image artifacts to the separate directory
