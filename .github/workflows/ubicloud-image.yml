@@ -24,7 +24,7 @@ on:
         default: true
         type: boolean
       upload_image:
-        description: "Upload image to MinIO cluster"
+        description: "Upload image to R2"
         default: true
         type: boolean
 
@@ -194,7 +194,6 @@ jobs:
       matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
     env:
       MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
-      MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -208,24 +207,24 @@ jobs:
           sudo chmod +x /usr/bin/azcopy
           azcopy --version
 
-      - name: Install MinIO client
+      - name: Install rclone
         run: |
-          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
-          sudo mv mc /usr/bin/mc
-          sudo chmod +x /usr/bin/mc
-          mc --version
-
-      - name: Set MinIO root certificates
-        run: |
-          mkdir -p ~/.mc/certs/CAs
-          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
-          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
-          EOT
+          sudo apt-get update
+          sudo apt-get install -y rclone
 
       - name: Azure login
         uses: azure/login@v2
         with:
           creds: '{"clientId":"${{ secrets.AZURE_CLIENT_ID }}","clientSecret":"${{ secrets.AZURE_CLIENT_SECRET }}","subscriptionId":"${{ secrets.AZURE_SUBSCRIPTION_ID }}","tenantId":"${{ secrets.AZURE_TENANT_ID }}"}'
+
+      - name: Configure rclone for R2 prod account
+        run: |
+          rclone config create r2-prod s3 \
+            provider Cloudflare \
+            access_key_id ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }} \
+            secret_access_key ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }} \
+            endpoint ${{ secrets.CLOUDFLARE_R2_ENDPOINT }} \
+            no_check_bucket true
 
       - name: Download the VHD image from Azure
         env:
@@ -254,15 +253,13 @@ jobs:
           BLOCK_COUNT=$(( VHD_IMAGE_SIZE / BLOCK_SIZE ))
           dd if="${{ env.MANAGED_IMAGE_NAME }}.vhd" of="${{ env.MANAGED_IMAGE_NAME }}.raw" bs=$BLOCK_SIZE count=$BLOCK_COUNT
 
-      - name: Create MinIO bucket
-        run: mc mb --ignore-existing ubicloud/ubicloud-images
-
-      - name: Upload the RAW image to MinIO with version
+      - name: Upload image to R2 prod account
         run: |
-          mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2-prod:ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw
 
       - name: Calculate SHA256 checksum
         run: |
           sha256sum ${{ env.MANAGED_IMAGE_NAME }}.raw > ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
           cat ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
-          mc cp ./${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ubicloud/ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw.sha256
+          echo "[\"${{ matrix.image_name }}\", \"\", \"${{ inputs.image_version }}\"] => \"$(cat ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256)\"," >> $GITHUB_STEP_SUMMARY
+          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2-prod:ubicloud-images/${{ matrix.image_name }}-${{inputs.image_version }}.raw.sha256
