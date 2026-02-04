@@ -22,7 +22,6 @@ permissions:
 
 env:
   AWS_REGION: "eu-central-1"
-  INSTANCE_TYPE: "r7a.large"
 
 jobs:
   generate-matrix:
@@ -165,7 +164,7 @@ jobs:
             -var "ami_name=${{ matrix.ami_name }}-${{ inputs.image_version }}" \
             -var "ami_description=${{ matrix.ami_description }} - Version ${{ inputs.image_version }}" \
             -var "region=${{ env.AWS_REGION }}" \
-            -var "instance_type=${{ env.INSTANCE_TYPE }}" \
+            -var "instance_type=${{ matrix.instance_type }}" \
             -var "vpc_id=${{ steps.create-vpc.outputs.vpc_id }}" \
             -var "subnet_id=${{ steps.create-subnet.outputs.subnet_id }}" \
             -var "security_group_id=${{ steps.create-sg.outputs.sg_id }}" \
@@ -180,7 +179,7 @@ jobs:
             -var "ami_name=${{ matrix.ami_name }}-${{ inputs.image_version }}" \
             -var "ami_description=${{ matrix.ami_description }} - Version ${{ inputs.image_version }}" \
             -var "region=${{ env.AWS_REGION }}" \
-            -var "instance_type=${{ env.INSTANCE_TYPE }}" \
+            -var "instance_type=${{ matrix.instance_type }}" \
             -var "vpc_id=${{ steps.create-vpc.outputs.vpc_id }}" \
             -var "subnet_id=${{ steps.create-subnet.outputs.subnet_id }}" \
             -var "security_group_id=${{ steps.create-sg.outputs.sg_id }}" \
@@ -279,6 +278,6 @@ jobs:
           echo "**AMI ID:** \`${{ steps.get-ami-id.outputs.ami_id }}\`" >> $GITHUB_STEP_SUMMARY
           echo "**AMI Name:** ${{ matrix.ami_name }}-${{ inputs.image_version }}" >> $GITHUB_STEP_SUMMARY
           echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Instance Type:** ${{ env.INSTANCE_TYPE }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Instance Type:** ${{ matrix.instance_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ inputs.image_version }}" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
