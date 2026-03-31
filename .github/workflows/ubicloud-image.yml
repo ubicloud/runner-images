@@ -1,18 +1,15 @@
 name: Build Ubicloud Image
-run-name: ${{ inputs.image_version }} - ${{ inputs.image_types }}
+run-name: ${{ inputs.input_name }} - ${{ inputs.output_name }}
 # GitHub Action port from Azure Pipelines version
 # https://github.com/actions/runner-images/blob/main/images.CI/linux-and-win/azure-pipelines/image-generation.yml
 
 on:
   workflow_dispatch:
     inputs:
-      image_types:
-        description: "Comma-separated list of image types to build"
+      input_name:
         required: true
-        default: github-ubuntu-2204-x64,github-ubuntu-2204-arm64,github-gpu-ubuntu-2204-x64,github-ubuntu-2404-x64,github-ubuntu-2404-arm64
         type: string
-      image_version:
-        description: "Image version in semver format. You can get current version from the README.md file"
+      output_name:
         required: true
         type: string
       prod_account:
@@ -26,36 +23,17 @@ on:
         default: true
         type: boolean
 
-concurrency: "${{ inputs.image_types }}-${{ inputs.image_version }}"
+concurrency: "${{ inputs.input_name }}-${{ inputs.output_name }}"
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  generate-matrix:
-    runs-on: ubuntu-latest
-    outputs:
-      images: ${{ steps.set-matrix.outputs.images }}
-    steps:
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set matrix
-        id: set-matrix
-        run: |
-          selected_images="$(echo '${{ inputs.image_types }}' | jq -R -c 'split(",")')"
-          echo "images<<EOF"$'\n'"$selected_images"$'\n'EOF >> "$GITHUB_OUTPUT"
   upload:
-    needs: [generate-matrix]
-    name: upload ${{ matrix.image_type }}
+    name: upload ${{ inputs.input_name }}
     runs-on: ubicloud-standard-16
-    strategy:
-      fail-fast: false
-      matrix:
-        image_type: ${{ fromJson(needs.generate-matrix.outputs.images) }}
     env:
-      MANAGED_IMAGE_NAME: "${{ matrix.image_type  }}-${{inputs.image_version }}"
       MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
     steps:
       - name: Check out code
@@ -82,9 +60,14 @@ jobs:
 
       - name: Download the RAW image from MinIO
         run: |
-          mc cp ubicloud/ubicloud-images/${{ env.MANAGED_IMAGE_NAME }}.raw ${{ env.MANAGED_IMAGE_NAME }}.raw
-          mc cp ubicloud/ubicloud-images/${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256
+          mc cp ubicloud/ubicloud-images/${{ inputs.input_name }} ${{ inputs.input_name }}
+          mc cp ubicloud/ubicloud-images/${{ inputs.input_name }}.sha256 ${{ inputs.input_name }}.sha256
 
+      - name: Rename the image
+        if: ${{ inputs.input_name != inputs.output_name }}
+        run: |
+          mv ${{ inputs.input_name }} ${{ inputs.output_name }}
+          mv ${{ inputs.input_name }}.sha256 ${{ inputs.output_name }}.sha256
       - name: Upload image to R2 dev account
         if: ${{ inputs.dev_account }}
         run: |
@@ -95,8 +78,8 @@ jobs:
             endpoint ${{secrets.CLOUDFLARE_R2_DEV_ENDPOINT }} \
             no_check_bucket true
 
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2-dev:ubicloud-images-dev/
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2-dev:ubicloud-images-dev/
+          rclone copy ${{ inputs.output_name }} r2-dev:ubicloud-images-dev/
+          rclone copy ${{ inputs.output_name }}.sha256 r2-dev:ubicloud-images-dev/
 
       - name: Upload image to R2 prod account
         if: ${{ inputs.prod_account }}
@@ -108,5 +91,5 @@ jobs:
             endpoint ${{ secrets.CLOUDFLARE_R2_ENDPOINT }} \
             no_check_bucket true
 
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw r2-prod:ubicloud-images/
-          rclone copy ${{ env.MANAGED_IMAGE_NAME }}.raw.sha256 r2-prod:ubicloud-images/
+          rclone copy ${{ inputs.output_name }} r2-prod:ubicloud-images/
+          rclone copy ${{ inputs.output_name }}.sha256 r2-prod:ubicloud-images/
