@@ -263,6 +263,33 @@ provisioner "shell" {
   // =====================================
 
   provisioner "shell" {
+    environment_vars = ["KERNEL_SUFFIX=azure"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/ubicloud/downgrade-kernel.sh"]
+    only             = ["azure-arm.image"]
+  }
+
+  provisioner "shell" {
+    environment_vars = ["KERNEL_SUFFIX=aws"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = ["${path.root}/../scripts/ubicloud/downgrade-kernel.sh"]
+    only             = ["amazon-ebs.image"]
+  }
+
+  provisioner "shell" {
+    execute_command   = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    expect_disconnect = true
+    inline            = ["echo 'Reboot VM after kernel downgrade'", "sudo reboot"]
+  }
+
+  provisioner "shell" {
+    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    pause_before        = "1m0s"
+    inline              = ["echo 'Kernel version after downgrade:' && uname -r"]
+    start_retry_timeout = "5m"
+  }
+
+  provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
