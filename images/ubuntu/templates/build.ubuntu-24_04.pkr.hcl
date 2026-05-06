@@ -302,9 +302,12 @@ provisioner "shell" {
 
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
-    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts             = ["${path.root}/../scripts/ubicloud/generalize-image.sh"]
-    only                = ["azure-arm.image"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/configure-apt-mirrors.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+    only             = ["azure-arm.image"]
   }
 
   provisioner "shell" {
