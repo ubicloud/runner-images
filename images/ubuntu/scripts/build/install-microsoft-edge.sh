@@ -9,8 +9,11 @@ source $HELPER_SCRIPTS/install.sh
 source $HELPER_SCRIPTS/etc-environment.sh
 
 REPO_URL="https://packages.microsoft.com/repos/edge"
-GPG_KEY="/usr/share/keyrings/microsoft-edge.gpg"
-REPO_PATH="/etc/apt/sources.list.d/microsoft-edge.list"
+# Use temp paths so the microsoft-edge-stable postinst can write its own repo
+# at /etc/apt/sources.list.d/microsoft-edge.list and key at
+# /usr/share/keyrings/microsoft-edge.gpg without us clobbering them on cleanup.
+GPG_KEY="/tmp/microsoft-edge-bootstrap.gpg"
+REPO_PATH="/etc/apt/sources.list.d/microsoft-edge-bootstrap.list"
 
 wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > $GPG_KEY
 # Specify an arch as Microsoft repository supports armhf and arm64 as well
