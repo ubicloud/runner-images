@@ -58,10 +58,10 @@ echo 'ACTION=="add", SUBSYSTEM=="module", KERNEL=="nf_conntrack", RUN+="/usr/sbi
 # where disks are presented as rotational (ROTA=1). This floods the page cache
 # with unused data during random-access I/O and causes memory exhaustion and thrashing.
 # Azure v4 VM series use SCSI disks (sd*); v5/v6 use NVMe namespaces (nvme*n*).
-if ! is_ubuntu22; then
-    readahead_rule='/etc/udev/rules.d/99-readahead.rules'
-    echo 'ACTION=="add|change", KERNEL=="sd*|nvme*n*", ATTR{queue/read_ahead_kb}="128"' | tee "$readahead_rule"
-fi
+# if ! is_ubuntu22; then
+#     readahead_rule='/etc/udev/rules.d/99-readahead.rules'
+#     echo 'ACTION=="add|change", KERNEL=="sd*|nvme*n*", ATTR{queue/read_ahead_kb}="128"' | tee "$readahead_rule"
+# fi
 
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
