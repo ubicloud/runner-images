@@ -27,6 +27,20 @@
       "image_name": "github-ubuntu-2404-arm64",
       "image_os": "ubuntu24-arm64",
       "build_template_name": "build.ubuntu-24_04-arm64.azure-arm.image"
+    },
+        {
+      "image_type": "ubuntu-26.04",
+      "readme": "Ubuntu2604-Readme.md",
+      "image_name": "github-ubuntu-2604-x64",
+      "image_os": "ubuntu26",
+      "build_template_name": "build.ubuntu-26_04.azure-arm.image"
+    },
+    {
+      "image_type": "ubuntu-26.04.arm64",
+      "readme": "Ubuntu2604-Arm64-Readme.md",
+      "image_name": "github-ubuntu-2604-arm64",
+      "image_os": "ubuntu26-arm64",
+      "build_template_name": "build.ubuntu-26_04-arm64.azure-arm.image"
     }
   ]
 }
