@@ -37,6 +37,26 @@
       "image_os": "ubuntu24-arm64",
       "source_ami_name": "ubuntu/images/*/ubuntu-noble-24.04-arm64-server-*",
       "build_template_name": "ubuntu-24_04-arm64"
+    },
+    {
+      "image_type": "ubuntu-26.04",
+      "instance_type": "r7a.large",
+      "packer_image_name": "ubuntu-26_04",
+      "ami_name": "github-ubuntu-26.04",
+      "ami_description": "GitHub Runner Ubuntu 26.04",
+      "image_os": "ubuntu26",
+      "source_ami_name": "ubuntu/images/*/ubuntu-resolute-26.04-amd64-server-*",
+      "build_template_name": "ubuntu-26_04"
+    },
+    {
+      "image_type": "ubuntu-26.04.arm64",
+      "instance_type": "r8g.large",
+      "packer_image_name": "ubuntu-26_04",
+      "ami_name": "github-ubuntu-26.04-arm64",
+      "ami_description": "GitHub Runner Ubuntu 26.04 arm64",
+      "image_os": "ubuntu26-arm64",
+      "source_ami_name": "ubuntu/images/*/ubuntu-resolute-26.04-arm64-server-*",
+      "build_template_name": "ubuntu-26_04-arm64"
     }
   ]
 }
