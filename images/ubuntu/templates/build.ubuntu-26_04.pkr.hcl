@@ -1,6 +1,31 @@
 build {
-  sources = ["source.azure-arm.image"]
+  sources = ["source.azure-arm.image", "source.amazon-ebs.image"]
   name = "ubuntu-26_04"
+
+  // =====================================
+  // ========== UBICLOUD AWS EXTRAS ======
+  // =====================================
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts         = ["${path.root}/../scripts/ubicloud/aws-pre.sh"]
+    only            = ["amazon-ebs.image"]
+  }
+
+  # Dummy file added to please Azure script compatibility
+  provisioner "file" {
+    destination = "/tmp/waagent.conf"
+    source      = "${path.root}/../scripts/ubicloud/aws-waagent.conf"
+    only        = ["amazon-ebs.image"]
+  }
+
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    inline          = ["mv /tmp/waagent.conf /etc"]
+    only            = ["amazon-ebs.image"]
+  }
+  // =====================================
+  // ========== UBICLOUD AWS EXTRAS ======
+  // =====================================
 
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
@@ -224,9 +249,39 @@ provisioner "shell" {
     scripts          = ["${path.root}/../scripts/build/post-build-validation.sh"]
   }
 
+  # provisioner "shell" {
+  #   execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+  #   inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+  # }
+
+  // =====================================
+  // ========== UBICLOUD EXTRAS ==========
+  // =====================================
+
   provisioner "shell" {
-    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    inline          = ["sleep 30", "/usr/sbin/waagent -force -deprovision+user && export HISTSIZE=0 && sync"]
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/setup-runner-user.sh",
+      "${path.root}/../scripts/ubicloud/configure-docker.sh",
+      "${path.root}/../scripts/ubicloud/install-cache-proxy.sh",
+      "${path.root}/../scripts/ubicloud/install-packages.sh",
+    ]
   }
 
+  provisioner "shell" {
+    environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
+    execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts          = [
+      "${path.root}/../scripts/ubicloud/configure-apt-mirrors.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
+    only             = ["azure-arm.image"]
+  }
+
+  provisioner "shell" {
+    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts             = ["${path.root}/../scripts/ubicloud/aws-optimize.sh"]
+    only                = ["amazon-ebs.image"]
+  }
 }
