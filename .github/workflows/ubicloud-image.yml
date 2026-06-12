@@ -9,8 +9,10 @@ on:
         default: ubuntu-noble
         type: choice
         options:
+          - ubuntu-resolute
           - ubuntu-noble
           - ubuntu-jammy
+          - debian-13
           - debian-12
           - almalinux-9
           - alpine-3.21
@@ -29,6 +31,23 @@ on:
         required: true
         type: string
 
+      upload_minio:
+        description: "Upload images to MinIO"
+        required: true
+        default: true
+        type: boolean
+
+      upload_prod:
+        description: "Upload images to R2 prod"
+        required: true
+        default: true
+        type: boolean
+      upload_dev:
+        description: "Upload images to R2 dev"
+        required: true
+        default: true
+        type: boolean
+
 jobs:
   upload:
     runs-on: ubicloud-standard-16
@@ -36,26 +55,31 @@ jobs:
       MC_HOST_ubicloud: ${{ secrets.MINIO_CONNECTION_STRING }}
     steps:
       - name: Check out code
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Install MinIO client
+        if: ${{ inputs.upload_minio }}
         run: |
-          curl https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          curl -L https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
           sudo mv mc /usr/bin/mc
           sudo chmod +x /usr/bin/mc
           mc --version
 
-      - name: Set MinIO root certificates
+      - name: Install rclone
+        if: ${{ inputs.upload_prod || inputs.upload_dev }}
         run: |
-          mkdir -p ~/.mc/certs/CAs
-          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
-          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
-          EOT
+          sudo apt-get update
+          sudo apt-get install -y rclone
 
       - name: Set image details
         id: set_image_details
         run: |
           case "${{ inputs.image_type }}" in
+            "ubuntu-resolute")
+              image_format="img"
+              [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
+              download_url="https://cloud-images.ubuntu.com/releases/resolute/release-${{ inputs.image_version }}/ubuntu-26.04-server-cloudimg-${arch}.img"        
+              ;;
             "ubuntu-noble")
               image_format="img"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
@@ -65,6 +89,11 @@ jobs:
               image_format="img"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
               download_url="https://cloud-images.ubuntu.com/releases/jammy/release-${{ inputs.image_version }}/ubuntu-22.04-server-cloudimg-${arch}.img"        
+              ;;
+            "debian-13")
+              image_format="raw"
+              [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
+              download_url="https://cloud.debian.org/images/cloud/trixie/${{ inputs.image_version }}/debian-13-genericcloud-${arch}-${{ inputs.image_version }}.raw"
               ;;
             "debian-12")
               image_format="raw"
@@ -89,15 +118,44 @@ jobs:
         run: |
           curl -f -L10 -o "${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}" "${{ steps.set_image_details.outputs.IMAGE_DOWNLOAD_URL }}"
 
-      - name: Create MinIO bucket
-        run: mc mb --ignore-existing ubicloud/ubicloud-images
-
-      - name: Upload the image to MinIO with version
-        run: |
-          mc cp ./${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} ubicloud/ubicloud-images/${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}
-
       - name: Calculate SHA256 checksum
         run: |
           sha256sum ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} > ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256
           cat ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256
+          echo "${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} => \"$(cat ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256)\"," >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload image to MinIO
+        if: ${{ inputs.upload_minio }}
+        run: |
+          mkdir -p ~/.mc/certs/CAs
+          cat <<EOT > ~/.mc/certs/CAs/ubicloud_images_blob_storage_certs.crt
+          ${{ secrets.MINIO_ROOT_CERTIFICATES }}
+          EOT
+          mc cp ./${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} ubicloud/ubicloud-images/${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}
           mc cp ./${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256 ubicloud/ubicloud-images/${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256
+
+      - name: Upload image to R2 prod account
+        if: ${{ inputs.upload_prod }}
+        run: |
+          rclone config create r2-prod s3 \
+            provider Cloudflare \
+            access_key_id ${{ secrets.CLOUDFLARE_R2_ACCESS_KEY_ID }} \
+            secret_access_key ${{ secrets.CLOUDFLARE_R2_SECRET_ACCESS_KEY }} \
+            endpoint ${{ secrets.CLOUDFLARE_R2_ENDPOINT }} \
+            no_check_bucket true
+
+          rclone copy ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} r2-prod:ubicloud-images/
+          rclone copy ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256 r2-prod:ubicloud-images/
+
+      - name: Upload image to R2 dev account
+        if: ${{ inputs.upload_dev }}
+        run: |
+          rclone config create r2-dev s3 \
+            provider Cloudflare \
+            access_key_id ${{secrets.CLOUDFLARE_R2_DEV_ACCESS_KEY_ID }} \
+            secret_access_key ${{secrets.CLOUDFLARE_R2_DEV_SECRET_ACCESS_KEY }} \
+            endpoint ${{secrets.CLOUDFLARE_R2_DEV_ENDPOINT }} \
+            no_check_bucket true
+
+          rclone copy ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }} r2-dev:ubicloud-images-dev/
+          rclone copy ${{ steps.set_image_details.outputs.IMAGE_FILE_NAME }}.sha256 r2-dev:ubicloud-images-dev/
