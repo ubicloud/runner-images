@@ -7,7 +7,8 @@ source $HELPER_SCRIPTS/install.sh
 # VMs of github runners are created with runneradmin user. Adding
 # runner user and group with the same id and gid as the standard.
 addgroup --gid 1001 runner
-adduser --disabled-password --uid 1001 --gid 1001 --gecos '' runner
+useradd --create-home --home-dir /home/runner --uid 1001 --gid 1001 --comment '' --shell /bin/bash runner
+
 echo 'runner ALL=(ALL) NOPASSWD:ALL' | sudo tee /etc/sudoers.d/98-runner
 
 # runner unix user needed access to manipulate the Docker daemon.
@@ -31,7 +32,7 @@ source /etc/environment
 # in the /etc/passwd file, so we have to create other users after running them.
 
 # Create runneradmin user so that cloudinit won’t waste time creating it
-adduser --disabled-password --shell /bin/bash --gecos '' runneradmin
+useradd --create-home --shell /bin/bash --comment '' runneradmin
 usermod -a -G sudo,adm,systemd-journal runneradmin
 
 ### Begin AWS only
