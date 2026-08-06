@@ -1,13 +1,8 @@
-| Announcements |
-|-|
-| [[Ubuntu] The Ubuntu 22 based runner images will begin deprecation on September 17th and will be fully unsupported by April 17th for GitHub Actions and Azure DevOps](https://github.com/actions/runner-images/issues/14254) |
-| [[Ubuntu] Ubuntu 26.04 and Ubuntu 26.04 Arm is now available as a public preview](https://github.com/actions/runner-images/issues/14226) |
-***
 # Ubuntu 26.04 LTS
 - OS Version: 26.04 LTS
-- Kernel Version: 7.0.0-1012-azure
-- Image Version: 20260824.102.3
-- Systemd version: 259.5-0ubuntu3.4
+- Kernel Version: 7.0.0-1009-azure
+- Image Version: 20260801.1.1
+- Systemd version: 259.5-0ubuntu3
 
 ## Installed Software
 
@@ -20,21 +15,21 @@
 - GNU C++: 13.4.0, 14.3.0, 15.2.0
 - GNU Fortran: 13.4.0, 14.3.0, 15.2.0
 - Kotlin 2.4.10-release-377
-- Node.js 24.19.0
+- Node.js 24.18.1
 - Perl 5.40.1
 - Python 3.14.4
 - Ruby 3.3.8
 
 ### Package Management
 - cpan 1.64
-- Helm 4.2.4
-- Homebrew 6.0.19
-- Npm 11.17.0
+- Helm 4.2.3
+- Homebrew 6.0.14
+- Npm 11.16.0
 - Pip 25.1.1
 - Pip3 25.1.1
-- Pipx 1.16.7
+- Pipx 1.16.5
 - RubyGems 3.6.7
-- Vcpkg (build from commit f74a2eade1)
+- Vcpkg (build from commit 39344dff01)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -65,7 +60,7 @@ to accomplish this.
 - CMake 4.4.2
 - Docker Amazon ECR Credential Helper 0.12.0
 - Docker Compose 5.1.3
-- Docker-Buildx 0.36.1
+- Docker-Buildx 0.36.0
 - Docker Client 29.4.2
 - Docker Server 29.4.2
 - Git 2.55.0
@@ -73,11 +68,11 @@ to accomplish this.
 - Git-ftp 1.6.0
 - jq 1.8.1
 - Kind 0.32.0
-- Kubectl 1.36.4
+- Kubectl 1.36.3
 - Kustomize 5.8.1
 - Minikube 1.38.1
 - n 10.2.0
-- nvm 0.40.7
+- nvm 0.40.6
 - OpenSSL 3.5.5-1ubuntu3.3
 - Packer 1.16.0
 - Podman 5.7.0
@@ -88,21 +83,21 @@ to accomplish this.
 - Ninja 1.13.2
 
 ### CLI Tools
-- AWS CLI 2.36.29
+- AWS CLI 2.36.14
 - AWS CLI Session Manager Plugin 1.2.835.0
 - AWS SAM CLI 1.165.0
-- Azure CLI 2.89.1
+- Azure CLI 2.88.0
 - Azure CLI (azure-devops) 1.0.6
-- GitHub CLI 2.98.0
-- Google Cloud CLI 581.0.0
+- GitHub CLI 2.97.0
+- Google Cloud CLI 578.0.0
 
 ### Java
 | Version            | Environment Variable |
 | ------------------ | -------------------- |
 | 11.0.32+9          | JAVA_HOME_11_X64     |
 | 17.0.20+8          | JAVA_HOME_17_X64     |
-| 21.0.12+1          | JAVA_HOME_21_X64     |
-| 25.0.4+1 (default) | JAVA_HOME_25_X64     |
+| 21.0.12+8          | JAVA_HOME_21_X64     |
+| 25.0.4+7 (default) | JAVA_HOME_25_X64     |
 
 ### PHP Tools
 - PHP: 8.5.4
@@ -122,8 +117,8 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.9.0
 
 ### Browsers and Drivers
-- Selenium server 4.47.0
-- Mozilla Firefox 154.0
+- Selenium server 4.46.0
+- Mozilla Firefox 153.0.1
 - Geckodriver 0.37.1
 
 #### Environment variables
@@ -142,7 +137,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - sqlite3 3.46.1
 
 #### PostgreSQL
-- PostgreSQL 18.6
+- PostgreSQL 18.4
 ```
 User: postgres
 PostgreSQL service is disabled by default.
@@ -159,7 +154,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 ```
 
 ### PowerShell Tools
-- PowerShell 7.6.5
+- PowerShell 7.6.4
 
 #### PowerShell Modules
 - Az: 15.6.1
@@ -232,7 +227,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | sshpass                | 1.10-0.1build1               |
 | sudo                   | 1.9.17p2-1ubuntu3            |
 | swig                   | 4.4.0-1                      |
-| systemd-coredump       | 259.5-0ubuntu3.4             |
+| systemd-coredump       | 259.5-0ubuntu3               |
 | tar                    | 1.35+dfsg-4ubuntu0.4         |
 | telnet                 | 0.17+2.7-2ubuntu1.1          |
 | texinfo                | 7.2-5ubuntu2                 |
@@ -242,9 +237,8 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | tzdata                 | 2026c-0ubuntu0.26.04.1       |
 | unzip                  | 6.0-29ubuntu1                |
 | upx                    | 4.2.4-1.1build1              |
-| wget                   | 1.25.0-2ubuntu4.4            |
+| wget                   | 1.25.0-2ubuntu4.3            |
 | xvfb                   | 2:21.1.22-1ubuntu1           |
 | xz-utils               | 5.8.3-1                      |
 | zip                    | 3.0-15ubuntu3                |
 | zsync                  | 0.6.2-9                      |
-

@@ -1,13 +1,8 @@
-| Announcements |
-|-|
-| [[Ubuntu] The Ubuntu 22 based runner images will begin deprecation on September 17th and will be fully unsupported by April 17th for GitHub Actions and Azure DevOps](https://github.com/actions/runner-images/issues/14254) |
-| [[Ubuntu] Ubuntu 26.04 and Ubuntu 26.04 Arm is now available as a public preview](https://github.com/actions/runner-images/issues/14226) |
-***
 # Ubuntu 24.04
 - OS Version: 24.04.4 LTS
-- Kernel Version: 6.17.0-1022-azure
-- Image Version: 20260823.101.1
-- Systemd version: 255.4-1ubuntu8.17
+- Kernel Version: 6.17.0-1020-azure
+- Image Version: 20260801.1.1
+- Systemd version: 255.4-1ubuntu8.16
 
 ## Installed Software
 
@@ -28,14 +23,14 @@
 
 ### Package Management
 - cpan 1.64
-- Helm 3.21.4
-- Homebrew 6.0.18
+- Helm 3.21.3
+- Homebrew 6.0.14
 - Npm 10.9.8
 - Pip 24.0
 - Pip3 24.0
-- Pipx 1.16.7
+- Pipx 1.16.5
 - RubyGems 3.4.20
-- Vcpkg (build from commit 827a2e1203)
+- Vcpkg (build from commit 39344dff01)
 - Yarn 1.22.22
 
 #### Environment variables
@@ -54,8 +49,8 @@ to accomplish this.
 
 ### Project Management
 - Ant 1.10.14
-- Gradle 9.7.1
-- Lerna 10.0.1
+- Gradle 9.6.1
+- Lerna 10.0.0
 - Maven 3.9.12
 
 ### Tools
@@ -67,7 +62,7 @@ to accomplish this.
 - CMake 3.31.6
 - Docker Amazon ECR Credential Helper 0.12.0
 - Docker Compose 2.38.2
-- Docker-Buildx 0.36.1
+- Docker-Buildx 0.36.0
 - Docker Client 28.0.4
 - Docker Server 28.0.4
 - Fastlane 2.238.0
@@ -77,19 +72,19 @@ to accomplish this.
 - Haveged 1.9.14
 - jq 1.7
 - Kind 0.32.0
-- Kubectl 1.36.4
+- Kubectl 1.36.3
 - Kustomize 5.8.1
 - MediaInfo 24.01
 - Mercurial 6.7.2
 - Minikube 1.38.1
 - n 10.2.0
 - Newman 6.2.2
-- nvm 0.40.7
+- nvm 0.40.6
 - OpenSSL 3.0.13-0ubuntu3.12
 - Packer 1.16.0
 - Parcel 2.16.4
 - Podman 5.8.4
-- Pulumi 3.259.0
+- Pulumi 3.255.0
 - Skopeo 1.13.3
 - Sphinx Open Source Search Server 2.2.11
 - yamllint 1.38.0
@@ -98,13 +93,13 @@ to accomplish this.
 - Ninja 1.13.2
 
 ### CLI Tools
-- AWS CLI 2.36.29
+- AWS CLI 2.36.14
 - AWS CLI Session Manager Plugin 1.2.835.0
 - AWS SAM CLI 1.165.0
-- Azure CLI 2.89.1
+- Azure CLI 2.88.0
 - Azure CLI (azure-devops) 1.0.6
-- GitHub CLI 2.98.0
-- Google Cloud CLI 581.0.0
+- GitHub CLI 2.97.0
+- Google Cloud CLI 578.0.0
 
 ### Java
 | Version             | Environment Variable |
@@ -112,8 +107,8 @@ to accomplish this.
 | 8.0.502+7           | JAVA_HOME_8_X64      |
 | 11.0.32+9           | JAVA_HOME_11_X64     |
 | 17.0.20+8 (default) | JAVA_HOME_17_X64     |
-| 21.0.12+1           | JAVA_HOME_21_X64     |
-| 25.0.4+1            | JAVA_HOME_25_X64     |
+| 21.0.12+8           | JAVA_HOME_21_X64     |
+| 25.0.4+7            | JAVA_HOME_25_X64     |
 
 ### PHP Tools
 - PHP: 8.3.6
@@ -133,8 +128,8 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - Rustfmt 1.9.0
 
 ### Browsers and Drivers
-- Selenium server 4.47.0
-- Mozilla Firefox 154.0
+- Selenium server 4.46.0
+- Mozilla Firefox 153.0.1
 - Geckodriver 0.37.1
 
 #### Environment variables
@@ -153,7 +148,7 @@ Both Xdebug and PCOV extensions are installed, but only Xdebug is enabled.
 - sqlite3 3.45.1
 
 #### PostgreSQL
-- PostgreSQL 16.15
+- PostgreSQL 16.14
 ```
 User: postgres
 PostgreSQL service is disabled by default.
@@ -170,7 +165,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 ```
 
 ### PowerShell Tools
-- PowerShell 7.6.5
+- PowerShell 7.6.4
 
 #### PowerShell Modules
 - Az: 15.6.1
@@ -247,7 +242,7 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | sshpass                | 1.09-1                       |
 | sudo                   | 1.9.15p5-3ubuntu5.24.04.2    |
 | swig                   | 4.2.0-2ubuntu1               |
-| systemd-coredump       | 255.4-1ubuntu8.17            |
+| systemd-coredump       | 255.4-1ubuntu8.16            |
 | tar                    | 1.35+dfsg-3ubuntu0.4         |
 | telnet                 | 0.17+2.5-3ubuntu4.2          |
 | texinfo                | 7.1-3build2                  |
@@ -257,9 +252,8 @@ Use the following command as a part of your job to start the service: 'sudo syst
 | tzdata                 | 2026c-0ubuntu0.24.04.1       |
 | unzip                  | 6.0-28ubuntu4.1              |
 | upx                    | 4.2.2-3                      |
-| wget                   | 1.21.4-1ubuntu4.5            |
+| wget                   | 1.21.4-1ubuntu4.4            |
 | xvfb                   | 2:21.1.12-1ubuntu1.6         |
 | xz-utils               | 5.6.1+really5.4.5-1ubuntu0.3 |
 | zip                    | 3.0-13ubuntu0.2              |
 | zsync                  | 0.6.2-5build1                |
-
