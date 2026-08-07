@@ -219,6 +219,24 @@ jobs:
                    Key=Version,Value="${{ inputs.image_version }}" \
                    Key=BuildDate,Value="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+      - name: Share AMI with development account
+        if: steps.get-ami-id.outputs.ami_id != ''
+        run: |
+          AMI_ID="${{ steps.get-ami-id.outputs.ami_id }}"
+          DEV_ACCOUNT_ID="${{ secrets.AWS_DEV_ACCOUNT_ID }}"
+
+          if [ -z "$DEV_ACCOUNT_ID" ]; then
+            echo "::error::AWS_DEV_ACCOUNT_ID secret is not set; cannot share $AMI_ID with the development account"
+            exit 1
+          fi
+
+          echo "Sharing AMI $AMI_ID with development account $DEV_ACCOUNT_ID..."
+          aws ec2 modify-image-attribute \
+            --image-id "$AMI_ID" \
+            --launch-permission "Add=[{UserId=$DEV_ACCOUNT_ID}]"
+
+          echo "AMI $AMI_ID shared with development account $DEV_ACCOUNT_ID"
+
       - name: Cleanup Infrastructure
         if: always()
         run: |
@@ -280,4 +298,5 @@ jobs:
           echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
           echo "**Instance Type:** ${{ matrix.instance_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ inputs.image_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Shared with development account:** yes" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
