@@ -219,6 +219,41 @@ jobs:
                    Key=Version,Value="${{ inputs.image_version }}" \
                    Key=BuildDate,Value="$(date -u +%Y-%m-%dT%H:%M:%SZ)"
 
+      - name: Share AMI with development account
+        if: steps.get-ami-id.outputs.ami_id != ''
+        run: |
+          AMI_ID="${{ steps.get-ami-id.outputs.ami_id }}"
+          DEV_ACCOUNT_ID="${{ secrets.AWS_DEV_ACCOUNT_ID }}"
+
+          if [ -z "$DEV_ACCOUNT_ID" ]; then
+            echo "::error::AWS_DEV_ACCOUNT_ID secret is not set; cannot share $AMI_ID with the development account"
+            exit 1
+          fi
+
+          echo "Sharing AMI $AMI_ID with development account $DEV_ACCOUNT_ID..."
+          aws ec2 modify-image-attribute \
+            --image-id "$AMI_ID" \
+            --launch-permission "Add=[{UserId=$DEV_ACCOUNT_ID}]"
+
+          # The AMI's backing EBS snapshot(s) also need explicit permission,
+          # otherwise the development account can launch instances from the
+          # AMI but cannot copy it or otherwise use the snapshot directly.
+          SNAPSHOT_IDS=$(aws ec2 describe-images \
+            --image-ids "$AMI_ID" \
+            --query 'Images[0].BlockDeviceMappings[].Ebs.SnapshotId' \
+            --output text)
+
+          for SNAPSHOT_ID in $SNAPSHOT_IDS; do
+            echo "Sharing snapshot $SNAPSHOT_ID with development account $DEV_ACCOUNT_ID..."
+            aws ec2 modify-snapshot-attribute \
+              --snapshot-id "$SNAPSHOT_ID" \
+              --attribute createVolumePermission \
+              --operation-type add \
+              --user-ids "$DEV_ACCOUNT_ID"
+          done
+
+          echo "AMI $AMI_ID and its snapshot(s) shared with development account $DEV_ACCOUNT_ID"
+
       - name: Cleanup Infrastructure
         if: always()
         run: |
@@ -280,4 +315,5 @@ jobs:
           echo "**Region:** ${{ env.AWS_REGION }}" >> $GITHUB_STEP_SUMMARY
           echo "**Instance Type:** ${{ matrix.instance_type }}" >> $GITHUB_STEP_SUMMARY
           echo "**Version:** ${{ inputs.image_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Shared with development account:** yes" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
