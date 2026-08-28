@@ -266,7 +266,10 @@ provisioner "shell" {
   provisioner "shell" {
     environment_vars = ["HELPER_SCRIPTS=${var.helper_script_folder}"]
     execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
-    scripts             = ["${path.root}/../scripts/ubicloud/generalize-image.sh"]
+    scripts             = [
+      "${path.root}/../scripts/ubicloud/optimize-boot.sh",
+      "${path.root}/../scripts/ubicloud/generalize-image.sh"
+    ]
     only                = ["azure-arm.image"]
   }
 
