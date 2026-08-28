@@ -51,6 +51,21 @@ GRUB_CMDLINE_LINUX_DEFAULT=\"console=tty1 console=ttyS0\"
 # Set the grub console type
 GRUB_TERMINAL=console" >> /etc/default/grub.d/50-cloudimg-settings.cfg
 
+# Boot without the initramfs when the kernel can mount the root filesystem on
+# its own. Loading and running the generic initramfs adds ~1.5 seconds to
+# every boot, and the azure kernel has the needed drivers built in. When
+# GRUB_FORCE_PARTUUID is set, grub attempts initrdless boot and falls back to
+# booting with the initrd if the kernel panics, so grub-initrd-fallback.service
+# must stay enabled.
+kernel_config="/boot/config-$(uname -r)"
+root_partuuid=$(blkid -s PARTUUID -o value "$(findmnt -no SOURCE /)" || true)
+if [ -n "$root_partuuid" ] &&
+   grep -q "^CONFIG_VIRTIO_BLK=y" "$kernel_config" &&
+   grep -q "^CONFIG_VIRTIO_PCI=y" "$kernel_config" &&
+   grep -q "^CONFIG_EXT4_FS=y" "$kernel_config"; then
+  echo "GRUB_FORCE_PARTUUID=$root_partuuid" > /etc/default/grub.d/40-force-partuuid.cfg
+fi
+
 # Update grub
 update-grub
 
