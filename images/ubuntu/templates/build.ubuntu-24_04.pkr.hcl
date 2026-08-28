@@ -306,6 +306,7 @@ provisioner "shell" {
     execute_command  = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts          = [
       "${path.root}/../scripts/ubicloud/configure-apt-mirrors.sh",
+      "${path.root}/../scripts/ubicloud/optimize-boot.sh",
       "${path.root}/../scripts/ubicloud/generalize-image.sh"
     ]
     only             = ["azure-arm.image"]
