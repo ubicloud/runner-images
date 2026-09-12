@@ -15,6 +15,7 @@ on:
           - debian-13
           - debian-12
           - almalinux-9
+          - almalinux-10
           - alpine-3.21
 
       image_arch:
@@ -78,17 +79,17 @@ jobs:
             "ubuntu-resolute")
               image_format="img"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
-              download_url="https://cloud-images.ubuntu.com/releases/resolute/release-${{ inputs.image_version }}/ubuntu-26.04-server-cloudimg-${arch}.img"        
+              download_url="https://cloud-images.ubuntu.com/releases/resolute/release-${{ inputs.image_version }}/ubuntu-26.04-server-cloudimg-${arch}.img"
               ;;
             "ubuntu-noble")
               image_format="img"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
-              download_url="https://cloud-images.ubuntu.com/releases/noble/release-${{ inputs.image_version }}/ubuntu-24.04-server-cloudimg-${arch}.img"        
+              download_url="https://cloud-images.ubuntu.com/releases/noble/release-${{ inputs.image_version }}/ubuntu-24.04-server-cloudimg-${arch}.img"
               ;;
             "ubuntu-jammy")
               image_format="img"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="amd64" || arch="arm64"
-              download_url="https://cloud-images.ubuntu.com/releases/jammy/release-${{ inputs.image_version }}/ubuntu-22.04-server-cloudimg-${arch}.img"        
+              download_url="https://cloud-images.ubuntu.com/releases/jammy/release-${{ inputs.image_version }}/ubuntu-22.04-server-cloudimg-${arch}.img"
               ;;
             "debian-13")
               image_format="raw"
@@ -108,9 +109,14 @@ jobs:
             "almalinux-9")
               image_format="qcow2"
               [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="x86_64" || arch="aarch64"
-              download_url="https://repo.almalinux.org/almalinux/9/cloud/${arch}/images/AlmaLinux-9-GenericCloud-${{ inputs.image_version }}.${arch}.qcow2"        
+              download_url="https://repo.almalinux.org/almalinux/9/cloud/${arch}/images/AlmaLinux-9-GenericCloud-${{ inputs.image_version }}.${arch}.qcow2"
+              ;;
+            "almalinux-10")
+              image_format="qcow2"
+              [[ "${{ inputs.image_arch }}" = "x64" ]] && arch="x86_64" || arch="aarch64"
+              download_url="https://repo.almalinux.org/almalinux/10/cloud/${arch}/images/AlmaLinux-10-GenericCloud-${{ inputs.image_version }}.${arch}.qcow2"
           esac
-          
+
           echo "IMAGE_DOWNLOAD_URL=$download_url" >> $GITHUB_OUTPUT
           echo "IMAGE_FILE_NAME=${{ inputs.image_type }}-${{ inputs.image_arch }}-${{ inputs.image_version }}.$image_format" >> $GITHUB_OUTPUT
 
