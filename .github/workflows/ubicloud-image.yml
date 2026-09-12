@@ -61,7 +61,7 @@ jobs:
       - name: Install MinIO client
         if: ${{ inputs.upload_minio }}
         run: |
-          curl -L https://dl.min.io/client/mc/release/linux-amd64/mc -o mc
+          curl -L https://dl.min.io/aistor/mc/release/linux-amd64/mc -o mc
           sudo mv mc /usr/bin/mc
           sudo chmod +x /usr/bin/mc
           mc --version
