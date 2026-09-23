@@ -1,0 +1,65 @@
+name: Publish Boot Image SHA256 Hashes
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Image version to publish, e.g. 20260901.1.0"
+        required: true
+        type: string
+      open_pr:
+        description: "Open a PR against ubicloud/ubicloud (unchecked: just report readiness)"
+        required: true
+        type: boolean
+        default: false
+
+permissions:
+  contents: read
+  actions: read # gh run list / gh api .../jobs / .../logs need this explicitly
+
+jobs:
+  publish:
+    runs-on: ubuntu-slim
+    steps:
+      - name: Check out runner-images
+        uses: actions/checkout@v6
+        with:
+          path: runner-images
+
+      - name: Check out ubicloud/ubicloud
+        if: inputs.open_pr
+        uses: actions/checkout@v6
+        with:
+          repository: ubicloud/ubicloud
+          path: ubicloud
+          token: ${{ secrets.UBICLOUD_REPO_PUSH_TOKEN }}
+
+      - name: Aggregate hashes and check completeness
+        if: ${{ !inputs.open_pr }}
+        working-directory: runner-images
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          python3 scripts/publish_boot_image_hashes.py \
+            --version "${{ inputs.version }}" \
+            --source-repo ubicloud/runner-images \
+            --source-repo-path . \
+            --dry-run
+
+      - name: Aggregate, update, and open PR
+        if: inputs.open_pr
+        working-directory: runner-images
+        env:
+          # Needs read access to this repo's Actions data and push+PR access
+          # to ubicloud/ubicloud (same token used for every `gh` call below).
+          GH_TOKEN: ${{ secrets.UBICLOUD_REPO_PUSH_TOKEN }}
+        run: |
+          git -C ../ubicloud config user.name "github-actions[bot]"
+          git -C ../ubicloud config user.email "github-actions[bot]@users.noreply.github.com"
+          python3 scripts/publish_boot_image_hashes.py \
+            --version "${{ inputs.version }}" \
+            --source-repo ubicloud/runner-images \
+            --target-repo ubicloud/ubicloud \
+            --source-repo-path . \
+            --target-repo-path ../ubicloud \
+            --open-pr
