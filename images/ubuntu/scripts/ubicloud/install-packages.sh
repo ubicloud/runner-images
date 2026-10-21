@@ -21,3 +21,19 @@ else
 fi
 archive_path=$(download_with_retry "$download_url")
 tar xzf "$archive_path" -C /usr/local/bin ubi
+
+# Distrust eMudhra-related root certificates. A "!" prefix in
+# /etc/ca-certificates.conf tells update-ca-certificates to drop them from the
+# system trust store.
+certificates=(
+    "mozilla/emSign_ECC_Root_CA_-_G3.crt"
+    "mozilla/Comodo_AAA_Services_root.crt"
+)
+for certificate in "${certificates[@]}"; do
+    sed -i "s|^${certificate}$|!&|" /etc/ca-certificates.conf
+    if grep -qx "$certificate" /etc/ca-certificates.conf; then
+        echo "Failed to distrust ${certificate}"
+        exit 1
+    fi
+done
+update-ca-certificates
