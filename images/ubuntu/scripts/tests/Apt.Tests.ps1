@@ -48,7 +48,8 @@ Describe "Apt acquire configuration" {
         (Get-CommandResult "apt-config dump APT::Acquire::Retries").Output | Should -BeNullOrEmpty
     }
 
-    It "Apt sources resolve through the mirror list" -Skip:$usesPortsArchive {
+    # configure-apt-sources.sh only rewrites the Azure mirror, and AWS images use the EC2 regional mirror.
+    It "Apt sources resolve through the mirror list" -Skip:($usesPortsArchive -or (Test-IsAws)) {
         $sourcesFile = if (Test-IsUbuntu22) { "/etc/apt/sources.list" } else { "/etc/apt/sources.list.d/ubuntu.sources" }
         Get-Content $sourcesFile -Raw | Should -Match ([regex]::Escape("mirror+file:/etc/apt/apt-mirrors.txt"))
     }
