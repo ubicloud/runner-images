@@ -98,6 +98,10 @@ function Test-IsUbuntu26-X64 {
     return (Test-IsUbuntu26) -and (Test-IsX64)
 }
 
+function Test-IsAws {
+    return (Get-Content "/sys/class/dmi/id/sys_vendor" -ErrorAction SilentlyContinue) -eq "Amazon EC2"
+}
+
 function Get-ToolsetContent {
     <#
     .SYNOPSIS
