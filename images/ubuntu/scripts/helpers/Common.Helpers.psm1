@@ -117,6 +117,49 @@ function Get-ToolsetContent {
     ConvertFrom-Json -InputObject $toolsetJson
 }
 
+function Invoke-WithRetry {
+    <#
+    .SYNOPSIS
+        Runs a script block and retries it when it throws.
+
+    .DESCRIPTION
+        The Invoke-WithRetry function runs the given script block. If the script block
+        throws, it waits and runs it again, up to the given number of attempts.
+
+    .PARAMETER ScriptBlock
+        The script block to run.
+
+    .PARAMETER Attempts
+        The maximum number of attempts.
+
+    .PARAMETER Interval
+        The number of seconds to wait between attempts.
+
+    .EXAMPLE
+        Invoke-WithRetry { Install-Module -Name Pester -Force }
+        Installs the Pester module and retries the installation if it fails.
+    #>
+    param(
+        [Parameter(Mandatory)]
+        [scriptblock] $ScriptBlock,
+        [int] $Attempts = 10,
+        [int] $Interval = 30
+    )
+
+    for ($attempt = 1; ; $attempt++) {
+        try {
+            return & $ScriptBlock
+        } catch {
+            if ($attempt -ge $Attempts) {
+                throw
+            }
+            Write-Warning "Attempt $attempt/$Attempts failed: $($_.Exception.Message)"
+            Write-Warning "Waiting $Interval seconds before retrying..."
+            Start-Sleep -Seconds $Interval
+        }
+    }
+}
+
 function Invoke-DownloadWithRetry {
     <#
     .SYNOPSIS
