@@ -12,8 +12,8 @@ Import-Module "$env:HELPER_SCRIPTS/../tests/Helpers.psm1"
 Set-PSRepository -InstallationPolicy Trusted -Name PSGallery
 
 # Try to update PowerShellGet before the actual installation
-Install-Module -Name PowerShellGet -Force
-Update-Module -Name PowerShellGet -Force
+Invoke-WithRetry { Install-Module -Name PowerShellGet -Force }
+Invoke-WithRetry { Update-Module -Name PowerShellGet -Force }
 
 # Install PowerShell modules
 $modules = (Get-ToolsetContent).powershellModules
@@ -25,10 +25,10 @@ foreach($module in $modules) {
     if ($module.versions) {
         foreach ($version in $module.versions) {
             Write-Host " - $version"
-            Install-Module -Name $moduleName -RequiredVersion $version -Scope AllUsers -SkipPublisherCheck -Force
+            Invoke-WithRetry { Install-Module -Name $moduleName -RequiredVersion $version -Scope AllUsers -SkipPublisherCheck -Force }
         }
     } else {
-        Install-Module -Name $moduleName -Scope AllUsers -SkipPublisherCheck -Force
+        Invoke-WithRetry { Install-Module -Name $moduleName -Scope AllUsers -SkipPublisherCheck -Force }
     }
 }
 

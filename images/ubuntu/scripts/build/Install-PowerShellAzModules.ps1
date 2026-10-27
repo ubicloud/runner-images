@@ -21,7 +21,7 @@ foreach ($module in $modules) {
         $modulePath = Join-Path -Path $installPSModulePath -ChildPath "${moduleName}_${version}"
         Write-Host " - $version [$modulePath]"
         $psModuleMachinePath += ($modulePath + ":")
-        Save-Module -Path $modulePath -Name $moduleName -RequiredVersion $version -Force
+        Invoke-WithRetry { Save-Module -Path $modulePath -Name $moduleName -RequiredVersion $version -Force }
     }
 }
 
