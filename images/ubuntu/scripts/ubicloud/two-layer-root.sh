@@ -47,6 +47,13 @@ mkfs.ext4 -F -q -O ^has_journal \
 mount -o noatime "$upper_dev" /overlay || boot_plain
 mkdir -p /overlay/upper /overlay/work || boot_plain
 
+# Swap has to live on the writable device: the kernel cannot swap to a file on
+# overlayfs, and the capped tmpfs mounts need somewhere to spill.
+if fallocate -l 4G /overlay/swapfile; then
+  chmod 600 /overlay/swapfile
+  mkswap -q /overlay/swapfile && swapon /overlay/swapfile
+fi
+
 modprobe overlay 2>/dev/null || true
 mount -t overlay overlay \
   -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /newroot || boot_plain
