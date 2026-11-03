@@ -1,0 +1,201 @@
+name: Build GCE Image
+run-name: GCE Image - ${{ inputs.image_version }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_types:
+        description: "Comma-separated list of image types to build"
+        required: true
+        default: ubuntu-22.04,ubuntu-24.04,ubuntu-26.04
+        type: string
+      image_version:
+        description: "Image version in semver format"
+        required: true
+        type: string
+
+concurrency: "${{ inputs.image_types }}-${{ inputs.image_version }}-gcp"
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  GCP_REGION: "europe-west3"
+  GCP_ZONE: "europe-west3-a"
+
+jobs:
+  generate-matrix:
+    runs-on: ubuntu-slim
+    outputs:
+      matrix: ${{ steps.set-matrix.outputs.matrix }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Set matrix
+        id: set-matrix
+        run: |
+          selected_images="$(echo '${{ inputs.image_types }}' | jq -R -c 'split(",")')"
+          images="$(cat .github/images-gcp.json)"
+          matrix="$(echo $images | jq --argjson selecteds "$selected_images" '{include: .include | map(select(.image_type | IN($selecteds[])))}')"
+          echo "matrix<<EOF"$'\n'"$matrix"$'\n'EOF >> "$GITHUB_OUTPUT"
+  build:
+    needs: generate-matrix
+    name: build ${{ matrix.image_type }}
+    runs-on: ubicloud-standard-4
+    strategy:
+      fail-fast: false
+      matrix: ${{ fromJson(needs.generate-matrix.outputs.matrix) }}
+    env:
+      BUILD_NAME: packer-build-${{ github.run_number }}-${{ matrix.image_name }}
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v6
+
+      - name: Authenticate to Google Cloud
+        id: auth
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ vars.WIF_PROVIDER }}
+          service_account: ${{ vars.WIF_SERVICE_ACCOUNT }}
+
+      - name: Set up gcloud
+        uses: google-github-actions/setup-gcloud@v2
+
+      - name: Set project
+        run: echo "GCP_PROJECT_ID=${{ steps.auth.outputs.project_id }}" >> $GITHUB_ENV
+
+      - name: Set image name
+        id: image-name
+        run: |
+          # GCE image names allow only lowercase letters, digits and hyphens.
+          version="${{ inputs.image_version }}"
+          echo "image_name=${{ matrix.image_name }}-${version//./-}" >> $GITHUB_OUTPUT
+
+      - name: Create network
+        id: create-network
+        run: |
+          echo "Creating network for Packer build..."
+          gcloud compute networks create $BUILD_NAME \
+            --project $GCP_PROJECT_ID \
+            --subnet-mode custom
+          echo "network=$BUILD_NAME" >> $GITHUB_OUTPUT
+          echo "Network created: $BUILD_NAME"
+
+      - name: Create subnet
+        id: create-subnet
+        run: |
+          echo "Creating subnet..."
+          gcloud compute networks subnets create $BUILD_NAME \
+            --project $GCP_PROJECT_ID \
+            --network ${{ steps.create-network.outputs.network }} \
+            --region $GCP_REGION \
+            --range 10.0.1.0/24
+          echo "subnet=$BUILD_NAME" >> $GITHUB_OUTPUT
+          echo "Subnet created: $BUILD_NAME"
+
+      - name: Create firewall rule
+        id: create-firewall
+        run: |
+          echo "Creating firewall rule..."
+          # Packer needs SSH access
+          gcloud compute firewall-rules create $BUILD_NAME \
+            --project $GCP_PROJECT_ID \
+            --network ${{ steps.create-network.outputs.network }} \
+            --direction INGRESS \
+            --allow tcp:22 \
+            --source-ranges 0.0.0.0/0 \
+            --target-tags $BUILD_NAME
+          echo "firewall=$BUILD_NAME" >> $GITHUB_OUTPUT
+          echo "Firewall rule created: $BUILD_NAME"
+
+      - name: Setup Packer
+        uses: hashicorp/setup-packer@main
+        with:
+          version: 1.9.4
+
+      - name: Initialize Packer plugins
+        run: |
+          packer init images/ubuntu/templates
+        env:
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
+
+      - name: Validate Packer template
+        run: |
+          packer validate \
+            -only "${{ matrix.build_template_name }}.googlecompute.image" \
+            -var "gce_image_name=${{ steps.image-name.outputs.image_name }}" \
+            -var "gce_image_description=${{ matrix.image_description }} - Version ${{ inputs.image_version }}" \
+            -var "gce_project_id=$GCP_PROJECT_ID" \
+            -var "gce_zone=$GCP_ZONE" \
+            -var "gce_network=${{ steps.create-network.outputs.network }}" \
+            -var "gce_subnetwork=${{ steps.create-subnet.outputs.subnet }}" \
+            -var "gce_network_tags=[\"$BUILD_NAME\"]" \
+            -var "gce_machine_type=${{ matrix.machine_type }}" \
+            -var "gce_source_image_family=${{ matrix.source_image_family }}" \
+            -var "image_os=${{ matrix.image_os }}" \
+            images/ubuntu/templates
+
+      - name: Build image
+        run: |
+          packer build \
+            -only "${{ matrix.build_template_name }}.googlecompute.image" \
+            -var "gce_image_name=${{ steps.image-name.outputs.image_name }}" \
+            -var "gce_image_description=${{ matrix.image_description }} - Version ${{ inputs.image_version }}" \
+            -var "gce_project_id=$GCP_PROJECT_ID" \
+            -var "gce_zone=$GCP_ZONE" \
+            -var "gce_network=${{ steps.create-network.outputs.network }}" \
+            -var "gce_subnetwork=${{ steps.create-subnet.outputs.subnet }}" \
+            -var "gce_network_tags=[\"$BUILD_NAME\"]" \
+            -var "gce_machine_type=${{ matrix.machine_type }}" \
+            -var "gce_source_image_family=${{ matrix.source_image_family }}" \
+            -var "image_os=${{ matrix.image_os }}" \
+            -var "image_version=${{ inputs.image_version }}" \
+            images/ubuntu/templates
+        env:
+          PACKER_LOG: 1
+          PACKER_LOG_PATH: "/tmp/packer-log.txt"
+          PACKER_GITHUB_API_TOKEN: ${{ secrets.PACKER_GITHUB_API_TOKEN }}
+
+      - name: Upload Packer logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: packer-logs-${{ github.run_number }}-${{ matrix.image_type }}
+          path: /tmp/packer-log.txt
+          retention-days: 30
+
+      - name: Cleanup Infrastructure
+        if: always()
+        run: |
+          echo "Cleaning up infrastructure..."
+          # Delete firewall rule
+          if [ -n "${{ steps.create-firewall.outputs.firewall }}" ]; then
+            gcloud compute firewall-rules delete ${{ steps.create-firewall.outputs.firewall }} \
+              --project $GCP_PROJECT_ID --quiet || true
+            echo "Firewall rule deleted"
+          fi
+          # Delete subnet
+          if [ -n "${{ steps.create-subnet.outputs.subnet }}" ]; then
+            gcloud compute networks subnets delete ${{ steps.create-subnet.outputs.subnet }} \
+              --project $GCP_PROJECT_ID --region $GCP_REGION --quiet || true
+            echo "Subnet deleted"
+          fi
+          # Delete network
+          if [ -n "${{ steps.create-network.outputs.network }}" ]; then
+            gcloud compute networks delete ${{ steps.create-network.outputs.network }} \
+              --project $GCP_PROJECT_ID --quiet || true
+            echo "Network deleted"
+          fi
+          echo "Infrastructure cleanup completed"
+
+      - name: Output Image Information
+        run: |
+          echo "## GCE Image Build Complete 🎉" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Image:** \`projects/$GCP_PROJECT_ID/global/images/${{ steps.image-name.outputs.image_name }}\`" >> $GITHUB_STEP_SUMMARY
+          echo "**Zone:** $GCP_ZONE" >> $GITHUB_STEP_SUMMARY
+          echo "**Machine Type:** ${{ matrix.machine_type }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Version:** ${{ inputs.image_version }}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
