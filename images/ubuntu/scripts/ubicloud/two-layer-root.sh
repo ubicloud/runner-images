@@ -19,37 +19,55 @@ cat > /usr/sbin/ubicloud-two-layer-init <<'EOF'
 # read-only, which is degraded but debuggable.
 log() { echo "ubicloud-two-layer: $*" > /dev/kmsg 2>/dev/null || true; }
 
-boot_plain() { log "falling back to read-only boot"; exec /lib/systemd/systemd; }
+# Booting the read-only image would look healthy to the control plane -- the VM
+# gets an address and answers ssh -- while every write in the job failed. Stop
+# instead, so the failure is attributable and the VM is never handed a job.
+die() {
+  log "FATAL: $*"
+  sleep 1
+  echo o > /proc/sysrq-trigger 2>/dev/null
+  exit 1
+}
 
 mountpoint -q /proc || mount -t proc proc /proc
 mountpoint -q /sys || mount -t sysfs sysfs /sys
 mountpoint -q /dev || mount -t devtmpfs devtmpfs /dev
 
-# The writable device is the one virtio disk that is neither the image we
-# booted from nor the cloud-init drive, so it is the one with no filesystem
-# signature on it.
+# Identify the writable device by what it is, not by what it contains. The
+# volume is encrypted with no written-block tracking, so an untouched sector
+# decrypts to pseudorandom bytes, and no test of its contents can tell a blank
+# device from a used one. What is known for certain is the disk we booted from,
+# which the kernel has already mounted at /, and that the cloud-init drive is a
+# few hundred KiB. The writable device is the remaining whole disk. Resolved
+# from sysfs and mountinfo, so nothing here depends on what any device holds.
+root_mm=$(awk '$5=="/" {print $3; exit}' /proc/self/mountinfo)
+root_disk=$(basename "$(readlink -f "/sys/dev/block/$root_mm/..")" 2>/dev/null)
+[ -n "$root_disk" ] || die "cannot resolve the disk holding / (mountinfo gave '$root_mm')"
+log "booted from $root_disk"
+
 upper_dev=""
-for d in /dev/vd*; do
-  case "$d" in /dev/vda*) continue ;; esac
-  [ -b "$d" ] || continue
-  [ "$(blockdev --getsize64 "$d" 2>/dev/null || echo 0)" -gt 1073741824 ] || continue
-  blkid -p "$d" >/dev/null 2>&1 && continue
-  upper_dev="$d"
+for dev in /sys/class/block/vd*; do
+  name=${dev#/sys/class/block/}
+  [ "$name" = "$root_disk" ] && continue
+  [ -e "$dev/partition" ] && continue
+  [ "$(cat "$dev/size" 2>/dev/null || echo 0)" -gt 2097152 ] || continue
+  upper_dev="/dev/$name"
   break
 done
-[ -n "$upper_dev" ] || { log "no blank writable device found"; boot_plain; }
+[ -n "$upper_dev" ] || die "no virtio disk larger than 1 GiB besides $root_disk"
+[ -b "$upper_dev" ] || die "$upper_dev is not a block device"
 log "using $upper_dev"
 
 # No journal: the device is discarded when the VM is destroyed, so ordering
 # guarantees across a crash buy nothing and cost writes.
 mkfs.ext4 -F -q -O ^has_journal \
-  -E lazy_itable_init=1,lazy_journal_init=1,nodiscard "$upper_dev" || boot_plain
-mount -o noatime "$upper_dev" /overlay || boot_plain
-mkdir -p /overlay/upper /overlay/work || boot_plain
+  -E lazy_itable_init=1,lazy_journal_init=1,nodiscard "$upper_dev" || die "mkfs failed on $upper_dev"
+mount -o noatime "$upper_dev" /overlay || die "cannot mount $upper_dev"
+mkdir -p /overlay/upper /overlay/work || die "cannot create overlay dirs"
 
 modprobe overlay 2>/dev/null || true
 mount -t overlay overlay \
-  -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /newroot || boot_plain
+  -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /newroot || die "cannot assemble overlay"
 
 # docker's overlay2 driver refuses an upperdir that is itself on overlayfs, so
 # give it a real filesystem on the writable device. This hides the images the
@@ -63,9 +81,9 @@ mount --move /proc /newroot/proc
 mount --move /sys /newroot/sys
 mount --move /dev /newroot/dev
 
-cd /newroot || boot_plain
+cd /newroot || die "cannot enter /newroot"
 # The image must stay mounted: it is the overlay's lower layer.
-pivot_root . oldroot || boot_plain
+pivot_root . oldroot || die "pivot_root failed"
 log "pivoted into overlay"
 exec chroot . /lib/systemd/systemd
 EOF
