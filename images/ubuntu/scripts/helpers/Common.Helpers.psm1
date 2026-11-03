@@ -102,6 +102,10 @@ function Test-IsAws {
     return (Get-Content "/sys/class/dmi/id/sys_vendor" -ErrorAction SilentlyContinue) -eq "Amazon EC2"
 }
 
+function Test-IsGce {
+    return (Get-Content "/sys/class/dmi/id/sys_vendor" -ErrorAction SilentlyContinue) -eq "Google"
+}
+
 function Get-ToolsetContent {
     <#
     .SYNOPSIS

@@ -1,0 +1,31 @@
+{
+  "include": [
+    {
+      "image_type": "ubuntu-22.04",
+      "machine_type": "n4d-highmem-2",
+      "image_name": "github-ubuntu-2204",
+      "image_description": "GitHub Runner Ubuntu 22.04",
+      "image_os": "ubuntu22",
+      "source_image_family": "ubuntu-2204-lts",
+      "build_template_name": "ubuntu-22_04"
+    },
+    {
+      "image_type": "ubuntu-24.04",
+      "machine_type": "n4d-highmem-2",
+      "image_name": "github-ubuntu-2404",
+      "image_description": "GitHub Runner Ubuntu 24.04",
+      "image_os": "ubuntu24",
+      "source_image_family": "ubuntu-2404-lts-amd64",
+      "build_template_name": "ubuntu-24_04"
+    },
+    {
+      "image_type": "ubuntu-26.04",
+      "machine_type": "n4d-highmem-2",
+      "image_name": "github-ubuntu-2604",
+      "image_description": "GitHub Runner Ubuntu 26.04",
+      "image_os": "ubuntu26",
+      "source_image_family": "ubuntu-2604-lts-amd64",
+      "build_template_name": "ubuntu-26_04"
+    }
+  ]
+}
