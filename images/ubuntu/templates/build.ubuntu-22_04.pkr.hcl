@@ -1,9 +1,9 @@
 build {
-  sources = ["source.azure-arm.image", "source.amazon-ebs.image"]
+  sources = ["source.azure-arm.image", "source.amazon-ebs.image", "source.googlecompute.image"]
   name    = "ubuntu-22_04"
 
   // =====================================
-  // ========== UBICLOUD AWS EXTRAS ======
+  // ======= UBICLOUD AWS/GCE EXTRAS =====
   // =====================================
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
@@ -11,20 +11,26 @@ build {
     only            = ["amazon-ebs.image"]
   }
 
+  provisioner "shell" {
+    execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts         = ["${path.root}/../scripts/ubicloud/gce-pre.sh"]
+    only            = ["googlecompute.image"]
+  }
+
   # Dummy file added to please Azure script compatibility
   provisioner "file" {
     destination = "/tmp/waagent.conf"
     source      = "${path.root}/../scripts/ubicloud/aws-waagent.conf"
-    only        = ["amazon-ebs.image"]
+    only        = ["amazon-ebs.image", "googlecompute.image"]
   }
 
   provisioner "shell" {
     execute_command = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     inline          = ["mv /tmp/waagent.conf /etc"]
-    only            = ["amazon-ebs.image"]
+    only            = ["amazon-ebs.image", "googlecompute.image"]
   }
   // =====================================
-  // ========== UBICLOUD AWS EXTRAS ======
+  // ======= UBICLOUD AWS/GCE EXTRAS =====
   // =====================================
 
   provisioner "shell" {
@@ -308,5 +314,11 @@ build {
     execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
     scripts             = ["${path.root}/../scripts/ubicloud/aws-optimize.sh"]
     only                = ["amazon-ebs.image"]
+  }
+
+  provisioner "shell" {
+    execute_command     = "sudo sh -c '{{ .Vars }} {{ .Path }}'"
+    scripts             = ["${path.root}/../scripts/ubicloud/gce-optimize.sh"]
+    only                = ["googlecompute.image"]
   }
 }
