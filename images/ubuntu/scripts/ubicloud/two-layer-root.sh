@@ -19,6 +19,10 @@ cat > /usr/sbin/ubicloud-two-layer-init <<'EOF'
 # read-only, which is degraded but debuggable.
 log() { echo "ubicloud-two-layer: $*" > /dev/kmsg 2>/dev/null || true; }
 
+CONTAINER_LAYER_DIRS="/var/lib/docker/overlay2
+/var/lib/containerd/io.containerd.snapshotter.v1.overlayfs
+/var/lib/containers/storage/overlay"
+
 # Booting the read-only image would look healthy to the control plane -- the VM
 # gets an address and answers ssh -- while every write in the job failed. Stop
 # instead, so the failure is attributable and the VM is never handed a job.
@@ -70,10 +74,10 @@ mount -t overlay overlay \
   -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /newroot || die "cannot assemble overlay"
 
 # A container runtime stacks an overlay of its own for every layer, and the
-# kernel refuses one whose upperdir is already on an overlay. Give each store a
-# real filesystem on the writable device. This hides the images the build
-# preloaded into the read-only base, which still needs an answer.
-for store in /var/lib/docker /var/lib/containerd /var/lib/containers; do
+# kernel refuses one whose upperdir is already on an overlay. Only the
+# directories it extracts layers into need a real filesystem; the content blobs
+# and metadata beside them are ordinary files and stay on the image.
+for store in $CONTAINER_LAYER_DIRS; do
   [ -d "/newroot$store" ] || continue
   mkdir -p "/overlay/stores$store"
   chown --reference="/newroot$store" "/overlay/stores$store"
@@ -99,6 +103,33 @@ log "pivoted into overlay"
 exec chroot . /lib/systemd/systemd
 EOF
 chmod 0755 /usr/sbin/ubicloud-two-layer-init
+
+# The layer directories start empty, so the images the build preloaded are not
+# there. Copy them back as the runtime starts, from the image rather than from
+# a registry.
+cat > /usr/sbin/ubicloud-seed-container-layers <<'EOF'
+#!/bin/bash
+set -u
+for store in /var/lib/docker/overlay2 \
+             /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs \
+             /var/lib/containers/storage/overlay; do
+  src="/oldroot$store"
+  [ -d "$src" ] || continue
+  mountpoint -q "$store" || continue
+  [ -z "$(ls -A "$store" 2>/dev/null)" ] || continue
+  cp -a "$src/." "$store/" || exit 1
+done
+EOF
+chmod 0755 /usr/sbin/ubicloud-seed-container-layers
+
+for unit in containerd docker; do
+  mkdir -p /etc/systemd/system/$unit.service.d
+  cat > /etc/systemd/system/$unit.service.d/10-ubicloud-seed.conf <<'EOF'
+[Service]
+ExecStartPre=/usr/sbin/ubicloud-seed-container-layers
+TimeoutStartSec=600
+EOF
+done
 
 # Mountpoints the script needs while the image is still read-only.
 mkdir -p /overlay /newroot /oldroot
