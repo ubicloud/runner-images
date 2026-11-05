@@ -18,7 +18,6 @@ systemctl disable snapd.seeded.service snapd.autoimport.service snapd.core-fixup
 systemctl disable update-notifier-download.service plymouth-quit.service plymouth-quit-wait.service || true
 systemctl disable libvirt-guests.service libvirtd.service systemd-machined.service || true
 systemctl disable mono-xsp4.service || true
-systemctl disable containerd.service docker.service
 systemctl disable apport.service logrotate.service grub-common.service keyboard-setup.service systemd-update-utmp.service systemd-fsck-root.service systemd-tmpfiles-setup.service apparmor.service e2scrub_reap.service || true
 systemctl disable ufw.service snapd.service snap.lxd.activate.service snapd.apparmor.service ec2-instance-connect.service snap.amazon-ssm-agent.amazon-ssm-agent.service cron.service || true
 # Disable firmware update services, not needed for one-shot runners
