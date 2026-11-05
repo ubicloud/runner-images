@@ -69,13 +69,17 @@ modprobe overlay 2>/dev/null || true
 mount -t overlay overlay \
   -o lowerdir=/,upperdir=/overlay/upper,workdir=/overlay/work /newroot || die "cannot assemble overlay"
 
-# docker's overlay2 driver refuses an upperdir that is itself on overlayfs, so
-# give it a real filesystem on the writable device. This hides the images the
-# build preloaded into the read-only base, which still needs an answer.
-if [ -d /newroot/var/lib/docker ]; then
-  mkdir -p /overlay/docker
-  mount --bind /overlay/docker /newroot/var/lib/docker
-fi
+# A container runtime stacks an overlay of its own for every layer, and the
+# kernel refuses one whose upperdir is already on an overlay. Give each store a
+# real filesystem on the writable device. This hides the images the build
+# preloaded into the read-only base, which still needs an answer.
+for store in /var/lib/docker /var/lib/containerd /var/lib/containers; do
+  [ -d "/newroot$store" ] || continue
+  mkdir -p "/overlay/stores$store"
+  chown --reference="/newroot$store" "/overlay/stores$store"
+  chmod --reference="/newroot$store" "/overlay/stores$store"
+  mount --bind "/overlay/stores$store" "/newroot$store"
+done
 
 mount --move /proc /newroot/proc
 mount --move /sys /newroot/sys
