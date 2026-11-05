@@ -81,6 +81,13 @@ for store in /var/lib/docker /var/lib/containerd /var/lib/containers; do
   mount --bind "/overlay/stores$store" "/newroot$store"
 done
 
+# cloud-init puts swap in a file at /swapfile, and the kernel will not swap to a
+# file on an overlay. Point that path at the writable device so cloud-init
+# creates it there, at whatever size was asked for.
+mkdir -p /overlay/swap /newroot/swap
+mount --bind /overlay/swap /newroot/swap
+ln -sfn /swap/swapfile /newroot/swapfile
+
 mount --move /proc /newroot/proc
 mount --move /sys /newroot/sys
 mount --move /dev /newroot/dev
