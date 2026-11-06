@@ -97,6 +97,11 @@ Describe "Root filesystem performance options" {
         $mountOptions | Should -Contain "data=writeback"
         $mountOptions | Should -Contain "commit=30"
     }
+
+    It "Root filesystem is mounted with noatime" {
+        $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
+        $mountOptions | Should -Contain "noatime"
+    }
 }
 
 Describe "Dpkg options" {
