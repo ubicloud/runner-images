@@ -87,6 +87,17 @@ mkdir -p "$(dirname "$grub_dropin")"
 echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"' | tee "$grub_dropin"
 update-grub
 
+# relatime still dirties an inode the first time a file is read each day, and a job reads far
+# more files than it writes. Nothing that outlives the VM reads atime. Unlike the options above
+# noatime can be set on a remount, so it goes in fstab: systemd remounts / from fstab during
+# boot, which would otherwise put relatime back.
+awk '($1 !~ /^#/ && $2 == "/") { $4 = $4 ",noatime" } { print }' /etc/fstab > /etc/fstab.tmp
+mv /etc/fstab.tmp /etc/fstab
+if ! findmnt --fstab --noheadings --output OPTIONS --mountpoint / | tr ',' '\n' | grep -qx noatime; then
+    echo "Failed to add the noatime option to the root filesystem in /etc/fstab"
+    exit 1
+fi
+
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests
