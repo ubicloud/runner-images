@@ -23,6 +23,10 @@ CONTAINER_LAYER_DIRS="/var/lib/docker/overlay2
 /var/lib/containerd/io.containerd.snapshotter.v1.overlayfs
 /var/lib/containers/storage/overlay"
 
+# Paths a job writes heavily that the image leaves empty, so they can be put on
+# the writable device directly rather than reached through the overlay.
+WORKSPACE_DIRS="/home/runner/actions-runner/_work"
+
 # Booting the read-only image would look healthy to the control plane -- the VM
 # gets an address and answers ssh -- while every write in the job failed. Stop
 # instead, so the failure is attributable and the VM is never handed a job.
@@ -83,6 +87,20 @@ for store in $CONTAINER_LAYER_DIRS; do
   chown --reference="/newroot$store" "/overlay/stores$store"
   chmod --reference="/newroot$store" "/overlay/stores$store"
   mount --bind "/overlay/stores$store" "/newroot$store"
+done
+
+# Overlayfs costs 8-15% on every read and write that passes through it, and the
+# cost is per operation, so it is worst for the small random I/O a build makes.
+# The job workspace does not exist in the image -- the runner creates it -- so
+# putting it on the writable device directly hides nothing and keeps the
+# heaviest path in a job off the overlay entirely.
+for work in $WORKSPACE_DIRS; do
+  parent=$(dirname "$work")
+  [ -d "/newroot$parent" ] || continue
+  mkdir -p "/overlay/work_dirs$work" "/newroot$work" || die "cannot create $work"
+  chown --reference="/newroot$parent" "/overlay/work_dirs$work" "/newroot$work"
+  chmod --reference="/newroot$parent" "/overlay/work_dirs$work"
+  mount --bind "/overlay/work_dirs$work" "/newroot$work" || die "cannot bind $work"
 done
 
 # cloud-init puts swap in a file at /swapfile, and the kernel will not swap to a
