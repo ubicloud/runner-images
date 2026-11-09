@@ -201,7 +201,8 @@ log "pivoted into the snapshot"
 # Grow the filesystem into the appended storage. Done from the real root, which
 # has resize2fs; the stage did not need to carry it.
 if [ -n "$GROW" ]; then
-  chroot . /sbin/resize2fs /dev/mapper/ubiroot >/dev/null 2>&1 || log "resize2fs failed; root stays at image size"
+  chroot . /sbin/resize2fs /dev/mapper/ubiroot >/dev/null 2>&1 \
+    || die "resize2fs failed; root would be image-sized, not the sold capacity"
 fi
 exec chroot . /lib/systemd/systemd
 EOF
