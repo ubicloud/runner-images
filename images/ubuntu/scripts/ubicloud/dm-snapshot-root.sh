@@ -181,7 +181,15 @@ else
 fi
 [ -b /dev/mapper/ubiroot ] || die "/dev/mapper/ubiroot was not created"
 
-mount -o noatime /dev/mapper/ubiroot /root || die "cannot mount /dev/mapper/ubiroot"
+# The image sets the root filesystem tuning (data=writeback, nobarrier,
+# journal_async_commit, commit=30) through rootflags on the kernel command line,
+# which the kernel applies only to the initial root mount -- the read-only image,
+# which we have now left. This mount of the snapshot is the filesystem's first
+# mount, so the same options can be set here; take them from the command line so
+# they stay in sync with whatever configure-environment.sh configured.
+rootflags=$(cat /proc/cmdline | tr ' ' '\n' | sed -n 's/^rootflags=//p')
+mount -o "noatime${rootflags:+,$rootflags}" /dev/mapper/ubiroot /root \
+  || die "cannot mount /dev/mapper/ubiroot"
 mount --move /proc /root/proc
 mount --move /sys /root/sys
 mount --move /dev /root/dev
