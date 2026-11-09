@@ -166,6 +166,12 @@ dm() { /bin/dmsetup create "$1" --table "$2" || die "dmsetup create $1 failed"; 
 # 8 sectors = 4 KiB chunks, the smallest dm-snapshot allows, which is also the
 # filesystem block size: a full-chunk write then needs no copy at all.
 cow_total=$(/bin/busybox blockdev --getsz "$COW_DEV") || die "cannot size $COW_DEV"
+# The copy-on-write store must be able to hold a full rewrite of the origin, or
+# enough distinct writes will exhaust it and dm-snapshot invalidates the root
+# mid-job (EIO, then read-only). The writable device is sized from the origin up
+# by the control plane, so this should never trip; reject it loudly if it does
+# rather than boot a VM that fails partway through a job.
+[ "$cow_total" -ge "$SECTORS" ] || die "writable device ($cow_total s) is smaller than the image ($SECTORS s)"
 cow_sectors=$((SECTORS + 2048))
 if [ "$cow_total" -gt "$cow_sectors" ]; then
   ext_sectors=$((cow_total - cow_sectors))
