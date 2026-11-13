@@ -13,6 +13,10 @@ systemctl disable hv-kvp-daemon.service
 
 # Remove Hyper-V line from chrony config file
 sed -i 's/^refclock PHC \/dev\/ptp_hyperv/# &/' /etc/chrony/chrony.conf
+
+# The Azure image comments out every pool, so chrony needs its own NTP sources
+echo "server time.cloudflare.com iburst
+pool ntp.ubuntu.com iburst maxsources 4" > /etc/chrony/sources.d/ubicloud.sources
 systemctl restart chronyd
 
 # Delete the Azure Linux Agent
