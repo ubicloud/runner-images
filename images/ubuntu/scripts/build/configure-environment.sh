@@ -78,6 +78,8 @@ echo 'ACTION=="add", SUBSYSTEM=="module", KERNEL=="nf_conntrack", RUN+="/usr/sbi
 # ephemeral, so losing recent writes on an unclean shutdown is acceptable.
 # data= and journal_async_commit can only be set on the initial mount performed by the initramfs,
 # so they have to be passed through rootflags on the kernel command line rather than through fstab.
+# noinit_itable stops ext4lazyinit from writing zeros over the inode tables of the block groups
+# that growing the root filesystem to the disk size adds at first boot.
 root_fs_type=$(findmnt --noheadings --first-only --output FSTYPE --target /)
 if [[ "$root_fs_type" != "ext4" ]]; then
     echo "Expected an ext4 root filesystem but found '${root_fs_type}', refusing to set ext4 rootflags"
@@ -86,7 +88,7 @@ fi
 
 grub_dropin='/etc/default/grub.d/99-runner-performance.cfg'
 mkdir -p "$(dirname "$grub_dropin")"
-echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"' | tee "$grub_dropin"
+echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable"' | tee "$grub_dropin"
 update-grub
 
 # Create symlink for tests running

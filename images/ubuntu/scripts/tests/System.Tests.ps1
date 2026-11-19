@@ -84,12 +84,12 @@ Describe "/tmp emptied at boot" {
 Describe "Root filesystem performance options" {
     It "GRUB drop-in sets the root filesystem mount options" {
         $content = Get-Content "/etc/default/grub.d/99-runner-performance.cfg" -Raw
-        $content | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"
+        $content | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable"
     }
 
     It "Kernel command line contains the root filesystem mount options" {
         $cmdline = & cat /proc/cmdline
-        $cmdline | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"
+        $cmdline | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable"
     }
 
     It "Root filesystem is mounted with the relaxed durability options" {
