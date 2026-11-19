@@ -96,6 +96,7 @@ Describe "Root filesystem performance options" {
         $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
         $mountOptions | Should -Contain "data=writeback"
         $mountOptions | Should -Contain "commit=30"
+        $mountOptions | Should -Contain "noatime"
     }
 }
 

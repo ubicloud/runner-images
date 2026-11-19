@@ -91,6 +91,15 @@ mkdir -p "$(dirname "$grub_dropin")"
 echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable"' | tee "$grub_dropin"
 update-grub
 
+# noatime is a VFS flag, which the kernel doesn't accept in rootflags, so set it in fstab for
+# systemd-remount-fs to apply.
+awk -v OFS='\t' '$1 !~ /^#/ && $2 == "/" && $4 !~ /(^|,)noatime(,|$)/ { $4 = $4 ",noatime" } { print }' /etc/fstab > /etc/fstab.new
+mv /etc/fstab.new /etc/fstab
+if ! findmnt --fstab --noheadings --output OPTIONS --mountpoint / | tr ',' '\n' | grep -qx noatime; then
+    echo "Failed to add the noatime option to the root filesystem in /etc/fstab"
+    exit 1
+fi
+
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests
