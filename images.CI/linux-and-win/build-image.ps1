@@ -27,7 +27,7 @@ if (-not (Test-Path $TemplatePath))
     exit 1
 }
 
-$buildName = $($BuildTemplateName).Split(".")[1]
+$buildName = $($BuildTemplateName).Split(".")[1] + ".azure-arm"
 $InstallPassword = [System.GUID]::NewGuid().ToString().ToUpper()
 
 $SensitiveData = @(
