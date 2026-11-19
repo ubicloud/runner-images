@@ -256,6 +256,28 @@ jobs:
           dd if="${{ env.MANAGED_IMAGE_NAME }}.vhd" of="${{ env.MANAGED_IMAGE_NAME }}.raw" bs=$BLOCK_SIZE count=$BLOCK_COUNT
           mv ${{ env.MANAGED_IMAGE_NAME }}.raw ${{ env.OUTPUT_IMAGE_NAME }}.raw
 
+      - name: Remove the root filesystem journal
+        run: |
+          loop=$(sudo losetup --find --show --partscan ${{ env.OUTPUT_IMAGE_NAME }}.raw)
+          trap 'sudo losetup --detach "$loop"' EXIT
+          sudo udevadm settle
+          root=""
+          for part in "$loop"p*; do
+            if [ "$(sudo blkid --match-tag LABEL --output value "$part")" = "cloudimg-rootfs" ]; then
+              root=$part
+            fi
+          done
+          if [ -z "$root" ]; then
+            echo "Found no cloudimg-rootfs partition in the image"
+            exit 1
+          fi
+          sudo e2fsck -f -p "$root" || [ $? -eq 1 ]
+          sudo tune2fs -O ^has_journal "$root"
+          if sudo dumpe2fs -h "$root" 2>/dev/null | grep "^Filesystem features:" | grep -qw has_journal; then
+            echo "The root filesystem still has a journal"
+            exit 1
+          fi
+
       - name: Upload image to R2 prod account
         run: |
           rclone copy ${{ env.OUTPUT_IMAGE_NAME }}.raw r2-prod:ubicloud-images/

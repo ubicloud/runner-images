@@ -78,6 +78,9 @@ echo 'ACTION=="add", SUBSYSTEM=="module", KERNEL=="nf_conntrack", RUN+="/usr/sbi
 # ephemeral, so losing recent writes on an unclean shutdown is acceptable.
 # data= and journal_async_commit can only be set on the initial mount performed by the initramfs,
 # so they have to be passed through rootflags on the kernel command line rather than through fstab.
+# The Ubicloud image workflow removes the journal after the build, and ext4 refuses to mount a
+# filesystem without a journal with data=, commit= or journal_async_commit, so only AWS images
+# keep them.
 # noinit_itable stops ext4lazyinit from writing zeros over the inode tables of the block groups
 # that growing the root filesystem to the disk size adds at first boot.
 root_fs_type=$(findmnt --noheadings --first-only --output FSTYPE --target /)
@@ -88,7 +91,12 @@ fi
 
 grub_dropin='/etc/default/grub.d/99-runner-performance.cfg'
 mkdir -p "$(dirname "$grub_dropin")"
-echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable"' | tee "$grub_dropin"
+if [[ "$(cat /sys/class/dmi/id/sys_vendor)" == "Amazon EC2" ]]; then
+    rootflags='nobarrier,data=writeback,journal_async_commit,commit=30,noinit_itable'
+else
+    rootflags='nobarrier,noinit_itable'
+fi
+echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT rootflags=$rootflags\"" | tee "$grub_dropin"
 update-grub
 
 # noatime is a VFS flag, which the kernel doesn't accept in rootflags, so set it in fstab for
