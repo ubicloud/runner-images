@@ -78,6 +78,7 @@ echo 'ACTION=="add", SUBSYSTEM=="module", KERNEL=="nf_conntrack", RUN+="/usr/sbi
 # ephemeral, so losing recent writes on an unclean shutdown is acceptable.
 # data= and journal_async_commit can only be set on the initial mount performed by the initramfs,
 # so they have to be passed through rootflags on the kernel command line rather than through fstab.
+# Ubicloud images have no journal, and ext4 refuses to mount them with these options.
 root_fs_type=$(findmnt --noheadings --first-only --output FSTYPE --target /)
 if [[ "$root_fs_type" != "ext4" ]]; then
     echo "Expected an ext4 root filesystem but found '${root_fs_type}', refusing to set ext4 rootflags"
@@ -86,8 +87,38 @@ fi
 
 grub_dropin='/etc/default/grub.d/99-runner-performance.cfg'
 mkdir -p "$(dirname "$grub_dropin")"
-echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"' | tee "$grub_dropin"
+if [[ "$(cat /sys/class/dmi/id/sys_vendor)" == "Amazon EC2" ]]; then
+    rootflags='nobarrier,data=writeback,journal_async_commit,commit=30'
+else
+    rootflags='nobarrier'
+fi
+echo "GRUB_CMDLINE_LINUX_DEFAULT=\"\$GRUB_CMDLINE_LINUX_DEFAULT rootflags=$rootflags\"" | tee "$grub_dropin"
 update-grub
+
+# Skip zeroing the inode tables added by the first boot resize. Online resize zeroes them itself
+# under noinit_itable, so set it only after cloud-init has grown the filesystem.
+itable_unit='/etc/systemd/system/skip-root-itable-zeroing.service'
+cat > "$itable_unit" <<'EOF'
+[Unit]
+Description=Skip zeroing the inode tables of the grown root filesystem
+After=cloud-init.service cloud-init-network.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount -o remount,noinit_itable /
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable "$(basename "$itable_unit")"
+
+# The kernel rejects noatime in rootflags.
+awk -v OFS='\t' '$1 !~ /^#/ && $2 == "/" && $4 !~ /(^|,)noatime(,|$)/ { $4 = $4 ",noatime" } { print }' /etc/fstab > /etc/fstab.new
+mv /etc/fstab.new /etc/fstab
+if ! findmnt --fstab --noheadings --output OPTIONS --mountpoint / | tr ',' '\n' | grep -qx noatime; then
+    echo "Failed to add the noatime option to the root filesystem in /etc/fstab"
+    exit 1
+fi
 
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh

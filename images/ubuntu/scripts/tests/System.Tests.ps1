@@ -1,3 +1,5 @@
+Import-Module "$PSScriptRoot/../helpers/Common.Helpers.psm1"
+
 # The $env:AGENT_NAME and $env:RUNNER_NAME are predefined variables for the ADO pipelines and for the GitHub actions respectively.
 # If the test is running on the ADO pipeline or on the GitHub actions, the test will be skipped
 Describe "Disk free space" -Skip:(-not [String]::IsNullOrEmpty($env:AGENT_NAME) -or -not [String]::IsNullOrEmpty($env:RUNNER_NAME)) {
@@ -82,20 +84,39 @@ Describe "/tmp emptied at boot" {
 #}
 
 Describe "Root filesystem performance options" {
+    BeforeAll {
+        $rootflags = if (Test-IsAws) {
+            "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"
+        } else {
+            "rootflags=nobarrier"
+        }
+    }
+
     It "GRUB drop-in sets the root filesystem mount options" {
         $content = Get-Content "/etc/default/grub.d/99-runner-performance.cfg" -Raw
-        $content | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"
+        $content | Should -Match ([regex]::Escape($rootflags) + '"')
     }
 
     It "Kernel command line contains the root filesystem mount options" {
         $cmdline = & cat /proc/cmdline
-        $cmdline | Should -Match "rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"
+        $cmdline | Should -Match ([regex]::Escape($rootflags) + '(\s|$)')
     }
 
-    It "Root filesystem is mounted with the relaxed durability options" {
+    It "Root filesystem is mounted with noatime" {
+        $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
+        $mountOptions | Should -Contain "noatime"
+    }
+
+    It "Root filesystem is mounted with the relaxed journal options" -Skip:(-not (Test-IsAws)) {
         $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
         $mountOptions | Should -Contain "data=writeback"
         $mountOptions | Should -Contain "commit=30"
+    }
+
+    It "Root filesystem is remounted to skip inode table zeroing" {
+        systemctl is-enabled skip-root-itable-zeroing.service | Should -Be "enabled"
+        $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
+        $mountOptions | Should -Contain "noinit_itable"
     }
 }
 
