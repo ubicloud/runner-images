@@ -89,6 +89,23 @@ mkdir -p "$(dirname "$grub_dropin")"
 echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"' | tee "$grub_dropin"
 update-grub
 
+# Skip zeroing the inode tables added by the first boot resize. Online resize zeroes them itself
+# under noinit_itable, so set it only after cloud-init has grown the filesystem.
+itable_unit='/etc/systemd/system/skip-root-itable-zeroing.service'
+cat > "$itable_unit" <<'EOF'
+[Unit]
+Description=Skip zeroing the inode tables of the grown root filesystem
+After=cloud-init.service cloud-init-network.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount -o remount,noinit_itable /
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable "$(basename "$itable_unit")"
+
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests

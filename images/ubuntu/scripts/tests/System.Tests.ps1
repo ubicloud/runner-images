@@ -97,6 +97,12 @@ Describe "Root filesystem performance options" {
         $mountOptions | Should -Contain "data=writeback"
         $mountOptions | Should -Contain "commit=30"
     }
+
+    It "Root filesystem is remounted to skip inode table zeroing" {
+        systemctl is-enabled skip-root-itable-zeroing.service | Should -Be "enabled"
+        $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
+        $mountOptions | Should -Contain "noinit_itable"
+    }
 }
 
 Describe "Dpkg options" {
