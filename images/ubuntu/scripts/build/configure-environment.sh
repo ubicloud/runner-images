@@ -106,6 +106,14 @@ WantedBy=multi-user.target
 EOF
 systemctl enable "$(basename "$itable_unit")"
 
+# The kernel rejects noatime in rootflags.
+awk -v OFS='\t' '$1 !~ /^#/ && $2 == "/" && $4 !~ /(^|,)noatime(,|$)/ { $4 = $4 ",noatime" } { print }' /etc/fstab > /etc/fstab.new
+mv /etc/fstab.new /etc/fstab
+if ! findmnt --fstab --noheadings --output OPTIONS --mountpoint / | tr ',' '\n' | grep -qx noatime; then
+    echo "Failed to add the noatime option to the root filesystem in /etc/fstab"
+    exit 1
+fi
+
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests
