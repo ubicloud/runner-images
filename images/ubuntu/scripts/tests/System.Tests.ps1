@@ -101,6 +101,12 @@ Describe "Root filesystem performance options" {
         $mountOptions | Should -Contain "noatime"
     }
 
+    It "Root filesystem uses fast commits" -Skip:(-not (Test-IsUbicloud)) {
+        $rootDevice = findmnt --noheadings --first-only --output SOURCE --target /
+        $features = (sudo dumpe2fs -h $rootDevice 2>$null) | Where-Object { $_ -like "Filesystem features:*" }
+        $features | Should -Match '\bfast_commit\b'
+    }
+
     It "Root filesystem is remounted to skip inode table zeroing" {
         systemctl is-enabled skip-root-itable-zeroing.service | Should -Be "enabled"
         $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","

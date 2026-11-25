@@ -109,6 +109,21 @@ if is_ubicloud && is_x64; then
     echo "options cpuidle-haltpoll force=1" | tee /etc/modprobe.d/cpuidle-haltpoll.conf
 fi
 
+# An fsync on ext4 commits the whole journal transaction: a descriptor, every
+# dirty metadata block and a commit block. With fast_commit, an fsync writes
+# only a small record of what changed in the inode, so a synchronous write
+# costs about one extra block instead of a full commit. On Ubicloud standard-4
+# runners with Ubuntu 24.04 it raised 4 KiB write+fdatasync from 3-5k to
+# 12-13k IOPS.
+if is_ubicloud; then
+    root_dev=$(findmnt --noheadings --first-only --output SOURCE --target /)
+    if [[ ! -b "$root_dev" ]]; then
+        echo "Expected the root filesystem on a block device but found '${root_dev}', refusing to enable fast_commit"
+        exit 1
+    fi
+    tune2fs -O fast_commit "$root_dev"
+fi
+
 # Skip zeroing the inode tables added by the first boot resize. Online resize zeroes them itself
 # under noinit_itable, so set it only after cloud-init has grown the filesystem.
 itable_unit='/etc/systemd/system/skip-root-itable-zeroing.service'
