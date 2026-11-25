@@ -106,6 +106,11 @@ function Test-IsGce {
     return (Get-Content "/sys/class/dmi/id/sys_vendor" -ErrorAction SilentlyContinue) -eq "Google"
 }
 
+# Ubicloud images are built on Azure, so the tests of an Ubicloud image run on an Azure VM.
+function Test-IsUbicloud {
+    return (Get-Content "/sys/class/dmi/id/sys_vendor" -ErrorAction SilentlyContinue) -eq "Microsoft Corporation"
+}
+
 function Get-ToolsetContent {
     <#
     .SYNOPSIS

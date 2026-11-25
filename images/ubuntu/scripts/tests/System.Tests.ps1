@@ -1,3 +1,5 @@
+Import-Module "$PSScriptRoot/../helpers/Common.Helpers.psm1"
+
 # The $env:AGENT_NAME and $env:RUNNER_NAME are predefined variables for the ADO pipelines and for the GitHub actions respectively.
 # If the test is running on the ADO pipeline or on the GitHub actions, the test will be skipped
 Describe "Disk free space" -Skip:(-not [String]::IsNullOrEmpty($env:AGENT_NAME) -or -not [String]::IsNullOrEmpty($env:RUNNER_NAME)) {
@@ -103,6 +105,24 @@ Describe "Root filesystem performance options" {
         systemctl is-enabled skip-root-itable-zeroing.service | Should -Be "enabled"
         $mountOptions = (findmnt --noheadings --first-only --output OPTIONS --target /) -split ","
         $mountOptions | Should -Contain "noinit_itable"
+    }
+}
+
+Describe "Idle driver" -Skip:(-not ((Test-IsUbicloud) -and (Test-IsX64))) {
+    It "cpuidle-haltpoll is loaded at boot with force=1" {
+        Get-Content "/etc/modules-load.d/cpuidle-haltpoll.conf" | Should -Contain "cpuidle-haltpoll"
+        Get-Content "/etc/modprobe.d/cpuidle-haltpoll.conf" | Should -Contain "options cpuidle-haltpoll force=1"
+    }
+
+    # The build VM runs on Hyper-V, where the driver doesn't load, so check
+    # that every installed kernel has the module instead.
+    It "Every installed kernel has the cpuidle-haltpoll module" {
+        $kernels = & linux-version list
+        $kernels | Should -Not -BeNullOrEmpty
+        foreach ($kernel in $kernels) {
+            & modinfo -k $kernel cpuidle-haltpoll 2>&1 | Out-Null
+            $LASTEXITCODE | Should -Be 0 -Because "kernel $kernel should ship cpuidle-haltpoll"
+        }
     }
 }
 
