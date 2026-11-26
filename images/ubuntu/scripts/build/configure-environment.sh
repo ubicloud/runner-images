@@ -89,6 +89,66 @@ mkdir -p "$(dirname "$grub_dropin")"
 echo 'GRUB_CMDLINE_LINUX_DEFAULT="$GRUB_CMDLINE_LINUX_DEFAULT rootflags=nobarrier,data=writeback,journal_async_commit,commit=30"' | tee "$grub_dropin"
 update-grub
 
+# A vCPU that halts as soon as it goes idle exits to the hypervisor and has to
+# be woken for the completion of the I/O it was waiting on, which adds tens of
+# microseconds to every synchronous write. The haltpoll idle driver polls
+# briefly before halting. It only loads on KVM, and force=1 is needed because
+# Cloud Hypervisor doesn't advertise the realtime hint. The driver only exists
+# on x86.
+if is_ubicloud && is_x64; then
+    # Some Azure kernels, such as 22.04's 6.8, ship the driver in
+    # linux-modules-extra, which the image doesn't include. Install the extras
+    # of each installed kernel that lacks it; the metapackage would instead
+    # pull in the newest kernel and its extras, and miss the installed one.
+    for kernel in $(linux-version list); do
+        if ! modinfo -k "$kernel" cpuidle-haltpoll > /dev/null 2>&1; then
+            apt-get install -y --no-install-recommends "linux-modules-extra-$kernel"
+        fi
+    done
+    echo "cpuidle-haltpoll" | tee /etc/modules-load.d/cpuidle-haltpoll.conf
+    echo "options cpuidle-haltpoll force=1" | tee /etc/modprobe.d/cpuidle-haltpoll.conf
+fi
+
+# An fsync on ext4 commits the whole journal transaction: a descriptor, every
+# dirty metadata block and a commit block. With fast_commit, an fsync writes
+# only a small record of what changed in the inode, so a synchronous write
+# costs about one extra block instead of a full commit. On Ubicloud standard-4
+# runners with Ubuntu 24.04 it raised 4 KiB write+fdatasync from 3-5k to
+# 12-13k IOPS.
+if is_ubicloud; then
+    root_dev=$(findmnt --noheadings --first-only --output SOURCE --target /)
+    if [[ ! -b "$root_dev" ]]; then
+        echo "Expected the root filesystem on a block device but found '${root_dev}', refusing to enable fast_commit"
+        exit 1
+    fi
+    tune2fs -O fast_commit "$root_dev"
+fi
+
+# Skip zeroing the inode tables added by the first boot resize. Online resize zeroes them itself
+# under noinit_itable, so set it only after cloud-init has grown the filesystem.
+itable_unit='/etc/systemd/system/skip-root-itable-zeroing.service'
+cat > "$itable_unit" <<'EOF'
+[Unit]
+Description=Skip zeroing the inode tables of the grown root filesystem
+After=cloud-init.service cloud-init-network.service
+
+[Service]
+Type=oneshot
+ExecStart=/usr/bin/mount -o remount,noinit_itable /
+
+[Install]
+WantedBy=multi-user.target
+EOF
+systemctl enable "$(basename "$itable_unit")"
+
+# The kernel rejects noatime in rootflags.
+awk -v OFS='\t' '$1 !~ /^#/ && $2 == "/" && $4 !~ /(^|,)noatime(,|$)/ { $4 = $4 ",noatime" } { print }' /etc/fstab > /etc/fstab.new
+mv /etc/fstab.new /etc/fstab
+if ! findmnt --fstab --noheadings --output OPTIONS --mountpoint / | tr ',' '\n' | grep -qx noatime; then
+    echo "Failed to add the noatime option to the root filesystem in /etc/fstab"
+    exit 1
+fi
+
 # Create symlink for tests running
 chmod +x $HELPER_SCRIPTS/invoke-tests.sh
 ln -s $HELPER_SCRIPTS/invoke-tests.sh /usr/local/bin/invoke_tests

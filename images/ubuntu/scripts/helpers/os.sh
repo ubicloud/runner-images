@@ -47,3 +47,9 @@ is_ubuntu24_x64() {
 is_ubuntu26_x64() {
     is_ubuntu26 && is_x64
 }
+
+# Ubicloud images are built on Azure, AWS images on EC2 and GCE images on GCE,
+# so the build VM's vendor tells which image is being built.
+is_ubicloud() {
+    [ "$(cat /sys/class/dmi/id/sys_vendor 2>/dev/null)" = "Microsoft Corporation" ]
+}

@@ -27,6 +27,13 @@ dpkg -l 'linux-image-*' 'linux-headers-*' 'linux-modules-*' 'linux-tools-*' | \
   awk '/^ii/ && $2 !~ /'"${TARGET_KERNEL}"'/ && $2 !~ /generic/ { print $2 }' | \
   xargs -r apt-get purge -y
 
+# The image tests ran on the kernels removed above, so check the shipped
+# kernel has the idle driver that configure-environment.sh loads at boot.
+if [ -f /etc/modules-load.d/cpuidle-haltpoll.conf ] && ! modinfo -k "${TARGET_KERNEL}" cpuidle-haltpoll > /dev/null; then
+  echo "${TARGET_KERNEL} has no cpuidle-haltpoll module"
+  exit 1
+fi
+
 # Clean up
 apt-get autoremove -y
 apt-get clean
